@@ -10,14 +10,14 @@
 - Ubicación: No aplica
 
 #### Identificación del Problema u Oportunidad de Mejora
-El problema que se identifico, es que al usar el *Blog de notas* o *Notepad* tanto en linux como en Windows se generan muchas notas inncesarias y/o basura, esto en el uso diario de estas aplicaciones; hasta el momento aplicaciones similares de Notas general el mismo problema.
+El problema que se identifico, es que al usar el *Blog de notas* o *Notepad* tanto en linux como en Windows se generan muchas notas innecesarias y/o basura, esto en el uso diario de estas aplicaciones; hasta el momento aplicaciones similares de Notas general el mismo problema.
 
 #### Objetivos del Negocio
 **No aplica**
 
 #### Declaración de la Visión del Producto
 
-**FlashNotes** es un software dirijido al publico en general, que use notas rápidas para organizar sus ideas o notas, las cuáles son temporales, resuelve el problema de generación de basura y archivos innecesarios, así como dar la oportunidad de guardar la nota (en caso de requerirla), su principal ventaja, es que evita notas innecesarias, y solo temporales.
+**FlashNotes** es un software dirigido al publico en general, que use notas rápidas para organizar sus ideas o notas, las cuáles son temporales, resuelve el problema de generación de basura y archivos innecesarios, así como dar la oportunidad de guardar la nota (en caso de requerirla), su principal ventaja, es que evita notas innecesarias, y solo temporales.
 
 
 ### Alcance
@@ -77,7 +77,7 @@ Entrevistas realizadas, documentos o reportes, diagramas, etc...
 |Id | Nombre | Usuario | Descripción | Pruebas de Aceptación | Puntos / DI / Prioridad |
 |---|--------|---------|-------------|-----------------------|-------------|
 |HU1 | Creación de notas | Usuario | Crear un espacio para la nota | Verificar que el usuario tiene donde escribir y pueda realizar las notas | 1 |
-|HU2 | Eliminar notas | Usuario / Aplicación | Eliminar todas las notas actuales al cerrar la aplicación o al hacer click en un botón | Verificar que al abrir la aplicación ya no halla notas, y después de hacer click | 1 |
+|HU2 | Eliminar notas | Usuario / Aplicación | Eliminar todas las notas actuales al cerrar la aplicación o al hacer click en un botón | Verificar que al abrir la aplicación ya no haya notas, y después de hacer click | 1 |
 |HU3 | Guardar notas | Usuario | Que la nota que el usuario quiera guardar se almacene en el SO con la extensión `.txt` | Verificar que el contenido del `.txt` sea el mismo que el de la aplicación al momento de guardar | 2 |
 |HU4 | GUI | Usuario | Interfaz Gráfica de Usuario | Verificar que todos los botones y funcionalidades, esten funcionando como se deben | 1 |
 |HU5 | Buscar Palabras | Usuario | Buscar palabra en la nota, y que mueva el puntero al inicio de la primera palabra encontrada | Ingresar texto, y verificar si esa palabra se encuentra | 3 | 
@@ -204,11 +204,14 @@ Aunque la metodología cascada no tiene iteraciones como tal, puedes desglosarlo
 
 **Viabilidad Económica**
 
+
 | Recurso | Alternativa 1 (Local) | Alternativa 2 (Nube) | Costo Anual (Local) | Costo Anual (Nube) | Observaciones |
+|-|-|-|-|-|-|
 |Hardware|-|-|-|-|-|
 |Software|-|-|-|-|-|
 |Almacenamiento|Disco Local|-|-|-|-|
 |Conectividad|-|-|-|-|-|
+
 
 **Diagrama de Tendencias Costo - Beneficio**
 No aplica
@@ -217,7 +220,7 @@ No aplica
 
 | **Factor**                     | **Descripción**                                                                  | **Estado Actual**                     | **Necesidades o Brechas**                 | **Observaciones**                                          |
 | ------------------------------ | -------------------------------------------------------------------------------- | ------------------------------------- | ----------------------------------------- | ---------------------------------------------------------- |
-| **Disponibilidad de Personal** | Capacidad del personal para operar y mantener el sistema.                        | Un programador (tú mismo).            | Buena gestión del tiempo.                 | Es posible avanzar en tiempos razonables con organización. |
+| **Disponibilidad de Personal** | Capacidad del personal para operar y mantener el sistema.                        | Un programador .            | Buena gestión del tiempo.                 | Es posible avanzar en tiempos razonables con organización. |
 | **Procesos Actuales**          | Compatibilidad de los procesos actuales con el sistema propuesto.                | No existen procesos formales.         | Definir flujo de trabajo personal.        | Puedes aplicar Git y una metodología simple como Kanban.   |
 | **Infraestructura**            | Adecuación de la infraestructura actual para soportar el sistema.                | PC personal con Linux/Windows.        | Ninguna.                                  | El proyecto no demanda muchos recursos.                    |
 | **Cultura Organizacional**     | Aceptación y adaptación de los usuarios al nuevo sistema.                        | No aplica.                            | -                                         | Al ser personal, puedes validar usabilidad contigo mismo.  |
