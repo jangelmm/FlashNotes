@@ -1,5 +1,5 @@
 # FlashNotes - Documentación
-## Requisitos
+## Fase 1: Requisitos
 ### Requerimientos del Negocio
 #### Contexto del Proyecto
 - Nombre de la Organización o Programador: Jesús Ángel Martínez Mendoza
@@ -13,7 +13,7 @@
 El problema que se identifico, es que al usar el *Blog de notas* o *Notepad* tanto en linux como en Windows se generan muchas notas innecesarias y/o basura, esto en el uso diario de estas aplicaciones; hasta el momento aplicaciones similares de Notas general el mismo problema.
 
 #### Objetivos del Negocio
-**No aplica**
+Ofrecer una herramienta sencilla para notas temporales que reduzca el desorden digital en la productividad diaria de los usuarios.
 
 #### Declaración de la Visión del Producto
 
@@ -227,7 +227,255 @@ No aplica
 | **Soporte Técnico**            | Disponibilidad de soporte técnico para resolver problemas y mantener el sistema. | Autosoporte con búsqueda y comunidad. | Participar en foros y leer documentación. | Stack Overflow, GitHub y ChatGPT pueden ser aliados clave. |
 
 
-## Diseño
+
+---
+
+## Fase 2: Diseño
+
+
+### Identificación de Entidades
+
+* `Nota`
+* `InterfazUsuario`
+* `ControladorNotas`
+* `AlmacenamientoTemporal`
+
+---
+
+### Diseño Arquitectónico
+
+#### Definición de la arquitectura
+
+Se usará el patrón de diseño **Modelo-Vista-Controlador (MVC)** para separar responsabilidades y facilitar el mantenimiento.
+
+```mermaid
+graph TD
+    Vista[Vista Java Swing]
+    Controlador[Controlador]
+    Modelo[Modelo Nota]
+
+    Vista --> Controlador
+    Controlador --> Modelo
+    Modelo --> Vista
+```
+
+#### Selección de Tecnología
+
+* Lenguaje: `Java 23`
+* GUI: `Java Swing`
+* Persistencia: Archivos `.txt` (no se usa base de datos)
+* Arquitectura: `MVC`
+
+---
+
+### Diseño Estático
+
+#### Diagrama de Clases UML
+
+```mermaid
+classDiagram
+    class Nota {
+        -contenido: String
+        -fechaCreacion: LocalDateTime
+        +getContenido(): String
+        +setContenido(String): void
+        +guardarComoTXT(): void
+    }
+
+    class InterfazUsuario {
+        -areaTexto: JTextArea
+        +mostrar(): void
+        +mostrarNotas(List~Nota~): void
+        +getContenidoNotaActual(): String
+        +mostrarMensaje(String): void
+    }
+
+    class ControladorNotas {
+        -notas: List~Nota~
+        -interfaz: InterfazUsuario
+        -almacenamiento: AlmacenamientoTemporal
+        +crearNota(String): void
+        +eliminarNota(int): void
+        +eliminarTodasNotas(): void
+        +guardarNotaComoTXT(int, String): void
+        +buscarNota(String): List~Nota~
+        +iniciarAplicacion(): void
+    }
+
+    class AlmacenamientoTemporal {
+        +guardarNotasTemporales(List~Nota~): void
+        +cargarNotasTemporales(): List~Nota~
+        +limpiarNotasTemporales(): void
+    }
+
+    ControladorNotas "1" *-- "0..*" Nota : contiene
+    ControladorNotas "1" -- "1" InterfazUsuario : controla
+    ControladorNotas "1" -- "1" AlmacenamientoTemporal : utiliza
+```
+
+#### Modelo Lógico de Datos (ERD)
+
+No aplica porque **no se usará base de datos**.
+
+---
+
+### Diseño Dinámico
+
+Diagrama de Secuencia: HU1 - Crear una nota
+```mermaid
+sequenceDiagram
+    actor Usuario
+    participant GUI as InterfazUsuario
+    participant Ctrl as ControladorNotas
+    participant N as Nota
+    participant Alm as AlmacenamientoTemporal
+
+    Usuario ->> GUI: Escribir contenido en área de texto
+    GUI ->> Ctrl: crearNota(contenido)
+    Ctrl ->> N: new Nota(contenido)
+    Ctrl ->> Ctrl: Añadir nota a la lista interna
+    Ctrl ->> Alm: guardarNotasTemporales(listaNotas)
+    Alm -->> Ctrl: Confirmación de guardado temporal
+    Ctrl -->> GUI: Notificar actualización de notas
+    GUI -->> Usuario: Mostrar nueva nota en la lista
+```
+
+Diagrama de Secuencia: HU2 - Eliminar todas las notas
+```mermaid
+sequenceDiagram
+    actor Usuario
+    participant GUI as InterfazUsuario
+    participant Ctrl as ControladorNotas
+    participant Alm as AlmacenamientoTemporal
+
+    Usuario ->> GUI: Clic en "Eliminar Todas las Notas"
+    GUI ->> Ctrl: eliminarTodasNotas()
+    Ctrl ->> Ctrl: Limpiar lista interna de notas
+    Ctrl ->> Alm: limpiarNotasTemporales()
+    Alm -->> Ctrl: Confirmación de limpieza
+    Ctrl -->> GUI: Notificar actualización de notas (lista vacía)
+    GUI -->> Usuario: Mostrar lista de notas vacía
+```
+
+Diagrama de Secuencia: HU3 - Guardar nota como TXT
+
+```mermaid
+sequenceDiagram
+    actor Usuario
+    participant GUI as InterfazUsuario
+    participant Ctrl as ControladorNotas
+    participant N as Nota
+
+    Usuario ->> GUI: Seleccionar nota y clic en "Guardar como TXT"
+    GUI ->> GUI: Mostrar diálogo para seleccionar ruta/nombre de archivo
+    Usuario ->> GUI: Seleccionar ruta y confirmar
+    GUI ->> Ctrl: guardarNotaComoTXT(indiceNota, rutaArchivo)
+    Ctrl ->> N: getContenido() (de la nota seleccionada)
+    N ->> N: guardarComoTXT(rutaArchivo)
+    N -->> Ctrl: Confirmación de guardado
+    Ctrl -->> GUI: mostrarMensaje("Nota guardada exitosamente")
+    GUI -->> Usuario: Mostrar mensaje de éxito
+```
+
+Diagrama de Secuencia: HU5 - Buscar Palabras en la Nota
+```mermaid
+sequenceDiagram
+    actor Usuario
+    participant GUI as InterfazUsuario
+    participant Ctrl as ControladorNotas
+
+    Usuario ->> GUI: Escribir palabra a buscar en campo de búsqueda
+    Usuario ->> GUI: Clic en "Buscar Palabra"
+    GUI ->> Ctrl: buscarNota(palabraClave)
+    Ctrl ->> Ctrl: Iterar sobre notas y buscar coincidencias
+    Ctrl -->> GUI: Notificar resultado de búsqueda (ej. índice de la primera ocurrencia)
+    GUI ->> GUI: Resaltar palabra encontrada o mover puntero
+    GUI -->> Usuario: Mostrar resultado de búsqueda
+```
+
+Nota sobre HU4 (Interfaz Gráfica de Usuario):
+La Historia de Usuario HU4 se refiere a la existencia y funcionalidad general de la Interfaz Gráfica de Usuario (GUI). Un diagrama de secuencia describe la interacción dinámica entre objetos para una funcionalidad específica. Dado que la GUI es el medio a través del cual el usuario interactúa con todas las demás funcionalidades, y no una funcionalidad en sí misma con una secuencia de pasos única, no se le asigna un diagrama de secuencia individual. Su funcionamiento se ve implícito en todos los demás diagramas de secuencia.
+
+---
+
+### Diseño de Interfaz de Usuario
+
+#### Mockup básico usando PlantUML (tipo menú de aplicación):
+
+```plantuml
+@startsalt
+{
+{TitleBar|FlashNotes - [Sin título]}
+
+{MenuBar
+  {+ Archivo |
+    Nueva Nota (Ctrl+N) |
+    Guardar como TXT (Ctrl+S) |
+    ---- |
+    Eliminar Nota Seleccionada |
+    Salir
+  }
+  {+ Editar |
+    Buscar (Ctrl+F)
+  }
+  {+ Ver |
+    Barra de Herramientas |
+    Barra de Estado
+  }
+}
+
+{ToolBar |
+  <&file> Nueva | <&save> Guardar | <&trash> Eliminar Nota | <&magnify> Buscar
+}
+
+{+------------------------------------------------------------+
+| Área de Texto Principal para la Nota Actual                |
+|                                                            |
+| Escribe aquí tus ideas rápidas. Esta nota es temporal      |
+| y se borrará al cerrar la aplicación, a menos que decidas  |
+| guardarla.                                                 |
++------------------------------------------------------------+
+| Notas Activas                                              |
+|------------------------------------------------------------|
+| [ ] Nota 1: Reunión con equipo...                    [X]   |
+| [ ] Nota 2: Ideas proyecto "Aurora"...              [X]   |
+|------------------------------------------------------------|
+| <[Eliminar Nota Seleccionada]>                             |
++------------------------------------------------------------+
+}
+
+{StatusBar | Línea: 1, Columna: 1 | Notas activas: 2}
+}
+@endsalt
+
+```
+
+[Ver Diagrama](https://editor.plantuml.com/uml/jLJDQXin4BuR_0v33gN1iI4vcc1Y1wSjjARKImaO7oRQIIBGIclzc9fi3dsKFe1FUOHziOxs9ob9UqYM3dkGTlw--Jv9PywZzGwLx_Vk-4kaLpH3MrmeTBSBuyd145PBgS6NUn-KMT_tUnpuXNJWk7uFu6u0KojkvTP04VS0Yq1R1Cv6U7_khHei3blNXu0sHGl2P0QIowG9M3u63DdQzLp9J6gEhaejIP4GqcXCiOrOef8LYFi6oJoLF57hdWKdU5Vtk3ZyC_0xFKMXjGWfmKVYHIP9UtGld7EcAZLDYPg4n1WrQxkTlhkMYYRDy0Nl7MvvtquS_tZBh4wUpHKT6TveURsRD8ZR1eDX1nlqUmMKForLy1FwuGryjL8BcQE277airQWq5JxmlsTMn08ThCgVEs7b5G5kGha77np8b9XUM_xAPOfkL14BEiBWm-OfourjiLGLTk08hWpBm3d0BX5biX4yvaeA5B9yq4U0a94s3ZQ1U60HYpSLRce958xUCaDt4IB7Bf8ijn7JQpdiqh-QVmNhMkVZCNoZe2DVV0Crq2R8t8n6V-LbTRbk9NWiS3A6JvLykJKx4doY3gR1ic07BueyfNV6Vxhwzqkmdlnl_UghkFJ8XxUwxV2vt6l2CHmVmRbH8TDn3QtEMEiyXfFweJWZdTOlx6y0)
+
+---
+
+### Diseño de Componentes
+
+```mermaid
+graph TB
+    subgraph GUI
+        UI[InterfazUsuario]
+    end
+
+    subgraph Lógica
+        CN[ControladorNotas]
+    end
+
+    subgraph Modelo
+        Nota[Nota]
+    end
+
+    UI --> CN
+    CN --> Nota
+```
+
+
+
 ## Implementación
 ## Pruebas
 ## Despliegue
