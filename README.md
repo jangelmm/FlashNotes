@@ -10,14 +10,14 @@
 - Ubicación: No aplica
 
 #### Identificación del Problema u Oportunidad de Mejora
-El problema que se identifico, es que al usar el *Blog de notas* o *Notepad* tanto en linux como en Windows se generan muchas notas innecesarias y/o basura, esto en el uso diario de estas aplicaciones; hasta el momento aplicaciones similares de Notas general el mismo problema.
+El problema que se identifico, es que al usar el *Blog de notas* o *Notepad* tanto en linux como en Windows se generan muchas notas innecesarias y/o basura, esto en el uso diario de estas aplicaciones; hasta el momento aplicaciones similares de notas general el mismo problema.
 
 #### Objetivos del Negocio
 Ofrecer una herramienta sencilla para notas temporales que reduzca el desorden digital en la productividad diaria de los usuarios.
 
 #### Declaración de la Visión del Producto
 
-**FlashNotes** es un software dirigido al publico en general, que use notas rápidas para organizar sus ideas o notas, las cuáles son temporales, resuelve el problema de generación de basura y archivos innecesarios, así como dar la oportunidad de guardar la nota (en caso de requerirla), su principal ventaja, es que evita notas innecesarias, y solo temporales.
+**FlashNotes** es un software dirigido al publico en general, que use notas rápidas para organizar sus ideas o notas, las cuales son temporales, resuelve el problema de generación de basura y archivos innecesarios, así como dar la oportunidad de guardar la nota (en caso de requerirla), su principal ventaja, es que evita notas innecesarias, y solo temporales.
 
 
 ### Alcance
@@ -31,7 +31,7 @@ flowchart TD
     subgraph Sistema["FlashNotes (Aplicación Desktop)"]
     end
 
-    subgraph BD["Sistema Operativo (Notas que se quieran guardar)"]
+    subgraph BD["Sistema de Archivos Local (Notas que se quieran guardar)"]
     end
 
     Usuario -->|Crea/edita/elimina notas| Sistema
@@ -402,55 +402,82 @@ La Historia de Usuario HU4 se refiere a la existencia y funcionalidad general de
 
 #### Mockup básico usando PlantUML (tipo menú de aplicación):
 
-```plantuml
-@startsalt
-{
-{TitleBar|FlashNotes - [Sin título]}
+![](/Images/Fase-2-Diseno-GUI-PlantUML.png)
 
-{MenuBar
-  {+ Archivo |
-    Nueva Nota (Ctrl+N) |
-    Guardar como TXT (Ctrl+S) |
-    ---- |
-    Eliminar Nota Seleccionada |
-    Salir
-  }
-  {+ Editar |
-    Buscar (Ctrl+F)
-  }
-  {+ Ver |
-    Barra de Herramientas |
-    Barra de Estado
-  }
-}
-
-{ToolBar |
-  <&file> Nueva | <&save> Guardar | <&trash> Eliminar Nota | <&magnify> Buscar
-}
-
-{+------------------------------------------------------------+
-| Área de Texto Principal para la Nota Actual                |
-|                                                            |
-| Escribe aquí tus ideas rápidas. Esta nota es temporal      |
-| y se borrará al cerrar la aplicación, a menos que decidas  |
-| guardarla.                                                 |
-+------------------------------------------------------------+
-| Notas Activas                                              |
-|------------------------------------------------------------|
-| [ ] Nota 1: Reunión con equipo...                    [X]   |
-| [ ] Nota 2: Ideas proyecto "Aurora"...              [X]   |
-|------------------------------------------------------------|
-| <[Eliminar Nota Seleccionada]>                             |
-+------------------------------------------------------------+
-}
-
-{StatusBar | Línea: 1, Columna: 1 | Notas activas: 2}
-}
-@endsalt
+<details>
 
 ```
+@startsalt
+skinparam BackgroundColor #2d333b
+skinparam BorderThickness 1
+skinparam BorderColor #4a5568
+skinparam FontColor #e2e8f0
 
-[Ver Diagrama](https://editor.plantuml.com/uml/jLJDQXin4BuR_0v33gN1iI4vcc1Y1wSjjARKImaO7oRQIIBGIclzc9fi3dsKFe1FUOHziOxs9ob9UqYM3dkGTlw--Jv9PywZzGwLx_Vk-4kaLpH3MrmeTBSBuyd145PBgS6NUn-KMT_tUnpuXNJWk7uFu6u0KojkvTP04VS0Yq1R1Cv6U7_khHei3blNXu0sHGl2P0QIowG9M3u63DdQzLp9J6gEhaejIP4GqcXCiOrOef8LYFi6oJoLF57hdWKdU5Vtk3ZyC_0xFKMXjGWfmKVYHIP9UtGld7EcAZLDYPg4n1WrQxkTlhkMYYRDy0Nl7MvvtquS_tZBh4wUpHKT6TveURsRD8ZR1eDX1nlqUmMKForLy1FwuGryjL8BcQE277airQWq5JxmlsTMn08ThCgVEs7b5G5kGha77np8b9XUM_xAPOfkL14BEiBWm-OfourjiLGLTk08hWpBm3d0BX5biX4yvaeA5B9yq4U0a94s3ZQ1U60HYpSLRce958xUCaDt4IB7Bf8ijn7JQpdiqh-QVmNhMkVZCNoZe2DVV0Crq2R8t8n6V-LbTRbk9NWiS3A6JvLykJKx4doY3gR1ic07BueyfNV6Vxhwzqkmdlnl_UghkFJ8XxUwxV2vt6l2CHmVmRbH8TDn3QtEMEiyXfFweJWZdTOlx6y0)
+' Colores específicos para elementos dentro del Salt
+skinparam salt {
+    BackgroundColor #2d333b
+    BorderColor #4a5568
+    FontColor #e2e8f0
+    LineColor #4a5568
+}
+
+{+
+  {
+    <size:18><b> <&pulse> <color:#90cdf4>FlashNotes - Notas Temporales</color></b></size> | . | <size:12><color:#a0aec0>2 notas activas</color></size> | <size:12><color:#fc8181><&x></color></size>
+  }
+  ====
+  {
+    [<size:12> <&plus> <color:#63b3ed>Nueva Nota</color></size>] | [<size:12> <&folder> <color:#68d391>Guardar TXT</color></size>] | [<size:12><&delete>️ <color:#fc8181>Limpiar Todo</color></size>] | . | "<color:#a0aec0><&magnifying-glass> Buscar en notas... (Ctrl+F)</color>"
+  }
+  ====
+  {
+    {SI
+      <size:14><b><color:#90cdf4>Notas Activas</color></b></size>
+      ----
+      {[X] <size:14><b> <&file> <color:#90cdf4>Nota 1</color></b></size> [<size:10><color:#68d391>Activa</color></size>] | <size:10><color:#fc8181><&x></color></size>}
+      <size:12><color:#a0aec0>Bienvenido a FlashNotes! Esta es tu aplicación...</color></size>
+      <size:10><color:#a0aec0>30/07/2025 10:30:15</color></size>
+      ----
+      {[  ] <size:14><b> <&file> <color:#90cdf4>Nota 2</color></b></size> | <size:10><color:#fc8181><&x></color></size>}
+      <size:12><color:#a0aec0>Lista de tareas para hoy: - Revisar emails...</color></size>
+      <size:10><color:#a0aec0>30/07/2025 09:45:22</color></size>
+      ----
+      {[  ] <size:14><b> <&file> <color:#90cdf4>Nota 3</color></b></size> | <size:10><color:#fc8181><&x></color></size>}
+      <size:12><color:#a0aec0>Ideas para el proyecto: Implementar búsqueda...</color></size>
+      <size:10><color:#a0aec0>29/07/2025 16:20:10</color></size>
+    } | {
+      {
+        <size:16><b><color:#90cdf4>Nota 1</color></b></size> | . | <size:12><color:#a0aec0>30/07/2025 10:30:15</color></size>
+      }
+      ====
+      {+
+        <size:14><b><color:#90cdf4>Bienvenido a FlashNotes!</color></b></size>
+        .
+        <size:14><color:#e2e8f0>Esta es tu aplicación de notas temporales.</color></size>
+        <size:14><color:#e2e8f0>Las características principales son:</color></size>
+        .
+        <size:14><color:#e2e8f0>• Las notas son temporales por defecto</color></size>
+        <size:14><color:#e2e8f0>• Se eliminan automáticamente al cerrar</color></size>
+        <size:14><color:#e2e8f0>• Puedes guardar notas importantes como .txt</color></size>
+        <size:14><color:#e2e8f0>• Búsqueda rápida en todas las notas</color></size>
+        <size:14><color:#e2e8f0>• Interfaz minimalista y rápida</color></size>
+        .
+        <size:14><color:#e2e8f0>¡Comienza a escribir tus ideas rápidas!</color></size>
+        .
+        <size:14><color:#e2e8f0>Recuerda: Esta nota se eliminará automáticamente</color></size>
+        <size:14><color:#e2e8f0>al cerrar FlashNotes, a menos que la guardes</color></size>
+        <size:14><color:#e2e8f0>como archivo .txt</color></size>
+      }
+    }
+  }
+  ====
+  {/ <size:12><color:#a0aec0>Línea: 12, Caracteres: 445</color></size> | . | <size:12><color:#ecc94b><b>⚠️ Notas temporales - Se eliminarán al cerrar</b></color></size> }
+}
+@endsalt
+```
+</details>
+
+[Link del Diseño de la GUI](https://editor.plantuml.com/uml/jLV1Rjj64BqRy3zC4y1juLYcACcL29L8RTI50SCeOXy213cibYDvONANtIM5sAg0_47kFTMz-zHBqMFr9_c1_a9dHLAcATA8d9ImlBIM-sRcpPiP-gL9c4uC2vFjBNCbPCmqY-2GyQk9LgaCZbIeD3ntWqwdCthmYD81wejBmQya6WFjzStyR9VrUWVzylQnaac-YIxsnyxsrlRMrx3y2WsWYP4lxiQ2AmFs16284Sg4_WneqOgM4CuhJjiWOBQz1NGr1h3ShFFERjJuPRy-5H8hJy-jnxDTkvzR71fnWrwxxmz7FWntuZGqI3VSdlEU3nmUZBl-SSZCvPbAACWze9KPkC0eLfg5Q8RxouVzuVw8FXREXr-XHPySs_KBEEOmv8xlWbnYC9w8AIi158VN3evvlzrl-yETTtxbQHl5tFxwdgvIN6zM63QgC3NtGHrqHXqC_BCKfsmPJGNoBNdmuFXOXKHy2Q0VT0Pj_wUKwO1fk7XzyIZ2S8VIZWdw__xr0IeHdOee5XP31Qe6nBBuhCBUS2TY4od6rq9EzYQK6GhjC3MSK51cpBPQBVZcAD7Xxl6t1Ugp9gPcvoVPpKeCNIk6YWIohFzGpTYed0TxxT5LtC_Ul7xx0DDoAS9rVLbmQDS9gM3HyIlaPvxKKBPse5axyqhSQq8z52YdA4MWWC5z4Nm5FrBxeNg790KMXu8pBXP_IgAzHfqb0qxLGCVPTxxRTnst1st7wpXUkzU0y91NW0s8TUihz4iITIei8G42TMLaUVUxLDSUzOjNE1N6YZDY8ZIVnP4pyBezptM_F4UT_v-Zas3534s1MAjhv8dou2IAip5178qMVvjVKWpOvZIvWtif7NWkIScfHPXJMBCLIyND2lUWeVRho_FnFl_fwbwHL_IcfNExQzxLTQQc8dsaIG6qwg1pt6o6-lKrRaMUJQzaDG6RKjMCVKhdgM7J04Izk3C9ePCqj91Sn1OHZ99U8-edEF_n_HzWZMIk4bh9NQ2LmXXR-MtikGK-HrAmY8Ha4bYQg6XnQoEm6aPW8N3KckadGVzCuYSF9_bepTmNrlE4IVl-mLMae9MyIvu4VrZK5-Z5RInefP6Pg82CX0LRJm8-8UVqcDq0iI8Y5YxxuNLXvNCo-S_jaOf8uZSCh1ov5YEXIPH4oxAXv2RAUj_So2laAHBZNZRPB0zWLbac4sjvtfYbbIvADVg2GY8qUZ-cf506ihpZvYbOge9fVYccZweZxpFpzNUX_URPjhYJICoqtHTmbDSi6W-wtMetQsg7oFcWExAjw-DllzkNmBDA0w4fULvcMvQhQ5ITDDPp-dc9Ch3_E_m7)
 
 ---
 
