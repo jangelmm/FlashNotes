@@ -231,14 +231,15 @@ No aplica
 ---
 
 ## Fase 2: Diseño
-
+>(Qué esto no lo haga ChatGPT porfavor, te lo digo por experiencia).
 
 ### Identificación de Entidades
 
-* `Nota`
-* `InterfazUsuario`
+* `Main`
+* `VistaNotas`
 * `ControladorNotas`
-* `AlmacenamientoTemporal`
+* `NotaDao`
+* `Nota`
 
 ---
 
@@ -250,13 +251,13 @@ Se usará el patrón de diseño **Modelo-Vista-Controlador (MVC)** para separar 
 
 ```mermaid
 graph TD
-    Vista[Vista Java Swing]
-    Controlador[Controlador]
-    Modelo[Modelo Nota]
+    Vista[Vista Java Swing]
+    Controlador[Controlador]
+    Modelo[Modelo Nota]
 
-    Vista --> Controlador
-    Controlador --> Modelo
-    Modelo --> Vista
+    Vista --> Controlador
+    Controlador --> Modelo
+    Modelo --> Vista
 ```
 
 #### Selección de Tecnología
@@ -272,45 +273,78 @@ graph TD
 
 #### Diagrama de Clases UML
 
+Note como algunas clases no poseen constructor.
+
 ```mermaid
 classDiagram
+    direction TD
+
+    %% Modelo de dominio
     class Nota {
-        -contenido: String
-        -fechaCreacion: LocalDateTime
-        +getContenido(): String
-        +setContenido(String): void
-        +guardarComoTXT(): void
+        - String contenido
+        + Nota(String contenido)
+        + String getContenido()
+        + void setContenido(String contenido)
+        + String toString()
     }
 
-    class InterfazUsuario {
-        -areaTexto: JTextArea
-        +mostrar(): void
-        +mostrarNotas(List~Nota~): void
-        +getContenidoNotaActual(): String
-        +mostrarMensaje(String): void
+    %% Data Access Object
+    class NotaDAO {
+        - static final String FILE_PATH
+        + List~Nota~ cargarNotas()
+        + void guardarNotas(List~Nota~ notas)
     }
 
+    %% Vista
+    class VistaNotas {
+        - JTextArea areaNotas
+        - JButton btnCrear
+        - JButton btnEliminar
+        - JButton btnEliminarTodas
+        - JButton btnBuscar
+        - JButton btnGuardar
+        + VistaNotas()
+        + String getContenido()
+        + void setContenido(String contenido)
+        + String getTextoBusqueda()
+        + void mostrarNotas(List~String~ contenido)
+        + void mostrarError(String mensaje)
+        + void addCrearListener(ActionListener)
+        + void addEliminarListener(ActionListener)
+        + void addEliminarTodasListener(ActionListener)
+        + void addBuscarListener(ActionListener)
+        + void addGuardarListener(ActionListener)
+    }
+
+    %% Controlador
     class ControladorNotas {
-        -notas: List~Nota~
-        -interfaz: InterfazUsuario
-        -almacenamiento: AlmacenamientoTemporal
-        +crearNota(String): void
-        +eliminarNota(int): void
-        +eliminarTodasNotas(): void
-        +guardarNotaComoTXT(int, String): void
-        +buscarNota(String): List~Nota~
-        +iniciarAplicacion(): void
+        - VistaNotas vista
+        - NotaDAO notaDAO
+        - List~Nota~ notas
+        + ControladorNotas(VistaNotas vista, NotaDAO notaDAO)
+        + void crearNota(String contenido)
+        + void eliminarNota(int index)
+        + void eliminarTodasNotas()
+        + List~Nota~ buscarNotas(String texto)
+        + void actionPerformed(ActionEvent e)
+        + void iniciarAplicacion()
     }
 
-    class AlmacenamientoTemporal {
-        +guardarNotasTemporales(List~Nota~): void
-        +cargarNotasTemporales(): List~Nota~
-        +limpiarNotasTemporales(): void
+    %% Punto de entrada
+    class Main {
+        + main(String[] args)
     }
 
-    ControladorNotas "1" *-- "0..*" Nota : contiene
-    ControladorNotas "1" -- "1" InterfazUsuario : controla
-    ControladorNotas "1" -- "1" AlmacenamientoTemporal : utiliza
+    %% Relaciones
+    Main --> VistaNotas          : crea instancia
+    Main --> NotaDAO             : crea instancia
+    Main --> ControladorNotas    : crea instancia
+
+    VistaNotas --> ControladorNotas : dispatch events (crear, eliminar, buscar, guardar)
+    ControladorNotas --> NotaDAO      : cargarNotas(), guardarNotas()
+    ControladorNotas --> Nota         : crea instancias, filtra, elimina
+    ControladorNotas --> VistaNotas   : setContenido(), mostrarNotas(), mostrarError()
+
 ```
 
 #### Modelo Lógico de Datos (ERD)
@@ -321,80 +355,104 @@ No aplica porque **no se usará base de datos**.
 
 ### Diseño Dinámico
 
-Diagrama de Secuencia: HU1 - Crear una nota
-```mermaid
-sequenceDiagram
-    actor Usuario
-    participant GUI as InterfazUsuario
-    participant Ctrl as ControladorNotas
-    participant N as Nota
-    participant Alm as AlmacenamientoTemporal
+A continuación se presentan los diagramas de secuencia actualizados para reflejar todas las historias de usuario (HU) y las operaciones del controlador tal como en el diagrama general:
 
-    Usuario ->> GUI: Escribir contenido en área de texto
-    GUI ->> Ctrl: crearNota(contenido)
-    Ctrl ->> N: new Nota(contenido)
-    Ctrl ->> Ctrl: Añadir nota a la lista interna
-    Ctrl ->> Alm: guardarNotasTemporales(listaNotas)
-    Alm -->> Ctrl: Confirmación de guardado temporal
-    Ctrl -->> GUI: Notificar actualización de notas
-    GUI -->> Usuario: Mostrar nueva nota en la lista
-```
+---
 
-Diagrama de Secuencia: HU2 - Eliminar todas las notas
-```mermaid
-sequenceDiagram
-    actor Usuario
-    participant GUI as InterfazUsuario
-    participant Ctrl as ControladorNotas
-    participant Alm as AlmacenamientoTemporal
-
-    Usuario ->> GUI: Clic en "Eliminar Todas las Notas"
-    GUI ->> Ctrl: eliminarTodasNotas()
-    Ctrl ->> Ctrl: Limpiar lista interna de notas
-    Ctrl ->> Alm: limpiarNotasTemporales()
-    Alm -->> Ctrl: Confirmación de limpieza
-    Ctrl -->> GUI: Notificar actualización de notas (lista vacía)
-    GUI -->> Usuario: Mostrar lista de notas vacía
-```
-
-Diagrama de Secuencia: HU3 - Guardar nota como TXT
+#### HU1 – Crear una nota
 
 ```mermaid
 sequenceDiagram
     actor Usuario
-    participant GUI as InterfazUsuario
+    participant VistaNotas as VistaNotas
     participant Ctrl as ControladorNotas
-    participant N as Nota
+    participant Nota as Nota
 
-    Usuario ->> GUI: Seleccionar nota y clic en "Guardar como TXT"
-    GUI ->> GUI: Mostrar diálogo para seleccionar ruta/nombre de archivo
-    Usuario ->> GUI: Seleccionar ruta y confirmar
-    GUI ->> Ctrl: guardarNotaComoTXT(indiceNota, rutaArchivo)
-    Ctrl ->> N: getContenido() (de la nota seleccionada)
-    N ->> N: guardarComoTXT(rutaArchivo)
-    N -->> Ctrl: Confirmación de guardado
-    Ctrl -->> GUI: mostrarMensaje("Nota guardada exitosamente")
-    GUI -->> Usuario: Mostrar mensaje de éxito
+    Usuario ->> VistaNotas: Escribe texto en nueva nota
+    Usuario ->> VistaNotas: Clic en "Crear"
+    VistaNotas ->> Ctrl: crearNota(contenido)
+    Ctrl ->> Nota: new Nota(contenido)
+    Ctrl ->> Ctrl: notas.add(nota)
+    Ctrl ->> VistaNotas: mostrarNotas(listadoDeContenidos)
+    VistaNotas -->> Usuario: Se lista la nueva nota
 ```
 
-Diagrama de Secuencia: HU5 - Buscar Palabras en la Nota
+---
+
+#### HU2 – Eliminar una nota individual
+
 ```mermaid
 sequenceDiagram
     actor Usuario
-    participant GUI as InterfazUsuario
+    participant VistaNotas as VistaNotas
     participant Ctrl as ControladorNotas
 
-    Usuario ->> GUI: Escribir palabra a buscar en campo de búsqueda
-    Usuario ->> GUI: Clic en "Buscar Palabra"
-    GUI ->> Ctrl: buscarNota(palabraClave)
-    Ctrl ->> Ctrl: Iterar sobre notas y buscar coincidencias
-    Ctrl -->> GUI: Notificar resultado de búsqueda (ej. índice de la primera ocurrencia)
-    GUI ->> GUI: Resaltar palabra encontrada o mover puntero
-    GUI -->> Usuario: Mostrar resultado de búsqueda
+    Usuario ->> VistaNotas: Selecciona nota (índice i)
+    Usuario ->> VistaNotas: Clic en "Eliminar"
+    VistaNotas ->> Ctrl: eliminarNota(i)
+    Ctrl ->> Ctrl: notas.remove(i)
+    Ctrl ->> VistaNotas: mostrarNotas(listadoDeContenidos)
+    VistaNotas -->> Usuario: Nota eliminada de la lista
 ```
 
-Nota sobre HU4 (Interfaz Gráfica de Usuario):
-La Historia de Usuario HU4 se refiere a la existencia y funcionalidad general de la Interfaz Gráfica de Usuario (GUI). Un diagrama de secuencia describe la interacción dinámica entre objetos para una funcionalidad específica. Dado que la GUI es el medio a través del cual el usuario interactúa con todas las demás funcionalidades, y no una funcionalidad en sí misma con una secuencia de pasos única, no se le asigna un diagrama de secuencia individual. Su funcionamiento se ve implícito en todos los demás diagramas de secuencia.
+---
+
+#### HU3 – Eliminar todas las notas
+
+```mermaid
+sequenceDiagram
+    actor Usuario
+    participant VistaNotas as VistaNotas
+    participant Ctrl as ControladorNotas
+
+    Usuario ->> VistaNotas: Clic en "Eliminar Todas"
+    VistaNotas ->> Ctrl: eliminarTodasNotas()
+    Ctrl ->> Ctrl: notas.clear()
+    Ctrl ->> VistaNotas: mostrarNotas([])
+    VistaNotas -->> Usuario: Lista vacía
+```
+
+---
+
+#### HU4 – Guardar notas en `.txt`
+
+```mermaid
+sequenceDiagram
+    actor Usuario
+    participant VistaNotas as VistaNotas
+    participant Ctrl as ControladorNotas
+    participant DAO as NotaDAO
+
+    Usuario ->> VistaNotas: Clic en "Guardar"
+    VistaNotas ->> Ctrl: guardarNotas()
+    Ctrl ->> DAO: guardarNotas(notas)
+    DAO -->> Ctrl: confirmación de escritura
+    Ctrl ->> VistaNotas: mostrarMensaje("Guardado exitoso")
+    VistaNotas -->> Usuario: Diálogo de éxito
+```
+
+---
+
+#### HU5 – Buscar palabra en las notas
+
+```mermaid
+sequenceDiagram
+    actor Usuario
+    participant VistaNotas as VistaNotas
+    participant Ctrl as ControladorNotas
+
+    Usuario ->> VistaNotas: Escribe texto de búsqueda
+    Usuario ->> VistaNotas: Clic en "Buscar"
+    VistaNotas ->> Ctrl: buscarNotas(palabraClave)
+    Ctrl ->> Ctrl: filtrar `notas` por coincidencia
+    Ctrl -->> VistaNotas: mostrarNotas(filtrado)
+    VistaNotas -->> Usuario: Sólo se muestran coincidencias
+```
+
+---
+
+> **HU4 (Interfaz Gráfica)**
+> La HU4 (existencia y funcionalidad de la GUI) está implícita en todos los diagramas: cada botón de la vista dispara un listener que invoca al controlador y actualiza la interfaz via `mostrarNotas()` o `mostrarMensaje()`.
 
 ---
 
@@ -503,7 +561,27 @@ graph TB
 
 
 
-## Implementación
+## Fase 3: Implementación
+### Configuración del Entorno
+- Entorno: Netbeans 19
+- Lenguaje: Java JDK 23
+- Git: git version 2.47.1.windows.2
+- Gestor de paquetes: Maven
+- BD: No aplica
+Nota: **El código del proyecto esta alojado en una subcarpeta actual ./FlashNotes**
+
+### Configuración de lógica y persistencia
+Para esto creamos una serie de paquetes.
+- modelo
+- vista
+- control
+
+#### Implementación de las entidades del (Modelo o Lógica)
+
+
+
+### Pruebas Unitarias de Integración
+
 ## Pruebas
 ## Despliegue
 ## Mantenimiento
