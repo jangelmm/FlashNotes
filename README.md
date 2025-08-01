@@ -231,14 +231,14 @@ No aplica
 ---
 
 ## Fase 2: Diseño
->(Qué esto no lo haga ChatGPT porfavor, te lo digo por experiencia).
 
 ### Identificación de Entidades
 
 * `Main`
-* `VistaNotas`
 * `ControladorNotas`
-* `NotaDao`
+* `VistaNotas`
+* `GestorNotas`
+* `NotaDAO`
 * `Nota`
 
 ---
@@ -277,75 +277,207 @@ Note como algunas clases no poseen constructor.
 
 ```mermaid
 classDiagram
-    direction TD
+    direction LR
 
-    %% Modelo de dominio
+    %% ----------------------
+    %% Modelo: Clases de Datos
+    %% ----------------------
     class Nota {
-        - String contenido
-        + Nota(String contenido)
-        + String getContenido()
-        + void setContenido(String contenido)
-        + String toString()
+        - contenido: String
+        + getContenido(): String
+        + setContenido(String): void
     }
+    note for Nota "Encapsula los datos de una nota. Es el objeto del dominio (HU1, HU3, HU5)."
 
-    %% Data Access Object
+    %% ----------------------
+    %% Modelo: Capa de Persistencia (DAO)
+    %% ----------------------
     class NotaDAO {
-        - static final String FILE_PATH
-        + List~Nota~ cargarNotas()
-        + void guardarNotas(List~Nota~ notas)
+        + guardarNotaEnArchivo(Nota, String rutaArchivo): boolean
+        + eliminarArchivoNotas(): void
     }
+    note for NotaDAO "Maneja el acceso a datos. Es responsable de guardar una nota específica y de la eliminación de archivos temporales (HU2, HU3)."
 
-    %% Vista
-    class VistaNotas {
-        - JTextArea areaNotas
-        - JButton btnCrear
-        - JButton btnEliminar
-        - JButton btnEliminarTodas
-        - JButton btnBuscar
-        - JButton btnGuardar
-        + VistaNotas()
-        + String getContenido()
-        + void setContenido(String contenido)
-        + String getTextoBusqueda()
-        + void mostrarNotas(List~String~ contenido)
-        + void mostrarError(String mensaje)
-        + void addCrearListener(ActionListener)
-        + void addEliminarListener(ActionListener)
-        + void addEliminarTodasListener(ActionListener)
-        + void addBuscarListener(ActionListener)
-        + void addGuardarListener(ActionListener)
-    }
-
-    %% Controlador
-    class ControladorNotas {
-        - VistaNotas vista
-        - NotaDAO notaDAO
+    %% ----------------------
+    %% Modelo: Capa de Lógica de Negocio
+    %% ----------------------
+    class GestorNotas {
         - List~Nota~ notas
-        + ControladorNotas(VistaNotas vista, NotaDAO notaDAO)
-        + void crearNota(String contenido)
-        + void eliminarNota(int index)
-        + void eliminarTodasNotas()
-        + List~Nota~ buscarNotas(String texto)
-        + void actionPerformed(ActionEvent e)
-        + void iniciarAplicacion()
+        - NotaDAO notaDAO
+        + crearNota(String): void
+        + eliminarNota(int): void
+        + eliminarTodas(): void
+        + guardarNota(int indice, String rutaArchivo): boolean
+        + buscar(String): int
+        + getNotas(): List~Nota~
+        + getNota(int indice): Nota
     }
+    note for GestorNotas "Es el corazón de la lógica del negocio. Contiene la colección de notas y delega la persistencia a NotaDAO (HU1, HU2, HU3, HU5)."
+    
+    %% ----------------------
+    %% Vista: Interfaz de Usuario
+    %% ----------------------
+    class VistaNotas {
+        - notasArea: JTextArea
+        - btnCrear: JButton
+        - btnEliminar: JButton
+        - btnEliminarTodas: JButton
+        - btnGuardar: JButton
+        - btnBuscar: JButton
+        + mostrarNotas(List~String~): void
+        + getTextoNota(): String
+        + getRutaGuardado(): String
+        + getIndiceNotaSeleccionada(): int
+        + mostrarMensaje(String): void
+        + addCrearListener(ActionListener): void
+        + addEliminarListener(ActionListener): void
+        + addGuardarListener(ActionListener): void
+        + addBuscarListener(ActionListener): void
+        + addEliminarTodasListener(ActionListener): void
+    }
+    note for VistaNotas "Responsable de la GUI. Permite al usuario interactuar con la aplicación y provee los datos al Controlador (HU4)."
 
-    %% Punto de entrada
+    %% ----------------------
+    %% Controlador: Orquestador
+    %% ----------------------
+    class ControladorNotas {
+        - gestor: GestorNotas
+        - vista: VistaNotas
+        + ControladorNotas(GestorNotas, VistaNotas): void
+        + actionPerformed(ActionEvent): void
+    }
+    note for ControladorNotas "Controla el flujo de la aplicación. Escucha los eventos de la Vista y coordina las acciones en el Modelo."
+
+    %% ----------------------
+    %% Punto de Entrada
+    %% ----------------------
     class Main {
-        + main(String[] args)
+        + main(String[]): void
     }
+    note for Main "Crea y conecta todas las instancias de las clases al inicio de la aplicación."
 
+    %% ----------------------
     %% Relaciones
-    Main --> VistaNotas          : crea instancia
-    Main --> NotaDAO             : crea instancia
-    Main --> ControladorNotas    : crea instancia
+    %% ----------------------
+    Main --> VistaNotas : crea instancia
+    Main --> GestorNotas : crea instancia
+    Main --> NotaDAO : crea instancia
+    Main --> ControladorNotas : crea instancia
 
-    VistaNotas --> ControladorNotas : dispatch events (crear, eliminar, buscar, guardar)
-    ControladorNotas --> NotaDAO      : cargarNotas(), guardarNotas()
-    ControladorNotas --> Nota         : crea instancias, filtra, elimina
-    ControladorNotas --> VistaNotas   : setContenido(), mostrarNotas(), mostrarError()
-
+    GestorNotas "1" *-- "0..*" Nota : contiene
+    GestorNotas --> NotaDAO : delega persistencia
+    ControladorNotas --> GestorNotas : manipula estado
+    ControladorNotas --> VistaNotas : actualiza GUI y escucha eventos
+    NotaDAO ..> Nota : utiliza para guardar/cargar datos
 ```
+
+<details>
+
+```mermaid
+classDiagram
+    direction LR
+
+    %% ----------------------
+    %% Modelo: Clases de Datos
+    %% ----------------------
+    class Nota {
+        - contenido: String
+        + getContenido(): String
+        + setContenido(String): void
+    }
+    note for Nota "Encapsula los datos de una nota. Es el objeto del dominio."
+
+    %% ----------------------
+    %% Modelo: Capa de Persistencia (DAO)
+    %% ----------------------
+    class NotaDAO {
+        + guardarNotaEnArchivo(Nota, String rutaArchivo): boolean
+        + cargarNotaDesdeArchivo(String rutaArchivo): Nota
+        + guardarTodasLasNotas(List~Nota~ notas, String rutaArchivo): boolean
+        + cargarTodasLasNotas(String rutaArchivo): List~Nota~
+        + eliminarArchivoNotas(String rutaArchivo): void
+        + cargarNotasDesdeDirectorio(String rutaDirectorio): List~Nota~
+    }
+    note for NotaDAO "Maneja el acceso a los datos (persistencia). Lee y escribe notas en archivos, individualmente o en lotes."
+
+    %% ----------------------
+    %% Modelo: Capa de Lógica de Negocio
+    %% ----------------------
+    class GestorNotas {
+        - List~Nota~ notas
+        - NotaDAO notaDAO
+        + crearNota(String): void
+        + eliminarNota(int): void
+        + eliminarTodas(): void
+        + guardarNota(int indice, String rutaArchivo): boolean
+        + cargarNotasDesdeArchivo(String rutaArchivo): void
+        + cargarNotasDesdeDirectorio(String rutaDirectorio): void
+        + buscar(String): int
+        + getNotas(): List~Nota~
+        + getNota(int indice): Nota
+    }
+    note for GestorNotas "Contiene la colección de notas y delega persistencia a NotaDAO."
+
+    %% ----------------------
+    %% Vista: Interfaz de Usuario
+    %% ----------------------
+    class VistaNotas {
+        - notasArea: JTextArea
+        - btnCrear: JButton
+        - btnEliminar: JButton
+        - btnEliminarTodas: JButton
+        - btnGuardar: JButton
+        - btnBuscar: JButton
+        + mostrarNotas(List~Nota~): void
+        + getTextoNota(): String
+        + getRutaGuardado(): String
+        + getRutaCargado(): String
+        + getIndiceNotaSeleccionada(): int
+        + mostrarMensaje(String): void
+        + addCrearListener(ActionListener): void
+        + addEliminarListener(ActionListener): void
+        + addGuardarListener(ActionListener): void
+        + addBuscarListener(ActionListener): void
+        + addEliminarTodasListener(ActionListener): void
+    }
+    note for VistaNotas "Presenta notas al usuario y maneja interacción sin lógica de negocio."
+
+    %% ----------------------
+    %% Controlador: Orquestador
+    %% ----------------------
+    class ControladorNotas {
+        - gestor: GestorNotas
+        - vista: VistaNotas
+        + ControladorNotas(GestorNotas, VistaNotas): void
+        + actionPerformed(ActionEvent): void
+    }
+    note for ControladorNotas "Coordina eventos de la vista y acciones en el modelo."
+
+    %% ----------------------
+    %% Punto de Entrada
+    %% ----------------------
+    class Main {
+        + main(String[]): void
+    }
+    note for Main "Inicia la aplicación y conecta componentes."
+
+    %% ----------------------
+    %% Relaciones
+    %% ----------------------
+    Main --> VistaNotas : crea instancia
+    Main --> GestorNotas : crea instancia
+    Main --> NotaDAO : crea instancia
+    Main --> ControladorNotas : crea instancia
+
+    GestorNotas "1" *-- "0..*" Nota : contiene
+    GestorNotas --> NotaDAO : delega persistencia
+    ControladorNotas --> GestorNotas : manipula estado
+    ControladorNotas --> VistaNotas : actualiza GUI y escucha eventos
+    NotaDAO ..> Nota : utiliza para guardar/cargar datos
+    VistaNotas ..> Nota : muestra datos
+```
+
+</details>
 
 #### Modelo Lógico de Datos (ERD)
 
@@ -355,106 +487,110 @@ No aplica porque **no se usará base de datos**.
 
 ### Diseño Dinámico
 
-A continuación se presentan los diagramas de secuencia actualizados para reflejar todas las historias de usuario (HU) y las operaciones del controlador tal como en el diagrama general:
-
----
-
 #### HU1 – Crear una nota
 
+Este diagrama refleja cómo se crea un nuevo objeto `Nota` a través de la capa del `GestorNotas` y se actualiza la interfaz.
+
 ```mermaid
 sequenceDiagram
     actor Usuario
-    participant VistaNotas as VistaNotas
+    participant Vista as VistaNotas
     participant Ctrl as ControladorNotas
+    participant Gestor as GestorNotas
     participant Nota as Nota
 
-    Usuario ->> VistaNotas: Escribe texto en nueva nota
-    Usuario ->> VistaNotas: Clic en "Crear"
-    VistaNotas ->> Ctrl: crearNota(contenido)
-    Ctrl ->> Nota: new Nota(contenido)
-    Ctrl ->> Ctrl: notas.add(nota)
-    Ctrl ->> VistaNotas: mostrarNotas(listadoDeContenidos)
-    VistaNotas -->> Usuario: Se lista la nueva nota
+    Usuario ->> Vista: Escribe texto en la interfaz
+    Usuario ->> Vista: Clic en "Crear"
+    Vista ->> Ctrl: notificarCrearNota(texto)
+    Ctrl ->> Gestor: crearNota(texto)
+    Gestor ->> Nota: new Nota(texto)
+    Gestor ->> Gestor: notas.add(nuevaNota)
+    Gestor -->> Ctrl: retornar lista actualizada de notas
+    Ctrl ->> Vista: mostrarNotas(listadoDeStrings)
+    Vista -->> Usuario: Se muestra la nueva nota en la lista
 ```
 
----
+-----
 
-#### HU2 – Eliminar una nota individual
+#### HU2 – Eliminar notas (individual o todas)
+
+Este diagrama ilustra la eliminación de una nota individual, delegando la responsabilidad de la colección de notas al `GestorNotas`.
 
 ```mermaid
 sequenceDiagram
     actor Usuario
-    participant VistaNotas as VistaNotas
+    participant Vista as VistaNotas
     participant Ctrl as ControladorNotas
+    participant Gestor as GestorNotas
 
-    Usuario ->> VistaNotas: Selecciona nota (índice i)
-    Usuario ->> VistaNotas: Clic en "Eliminar"
-    VistaNotas ->> Ctrl: eliminarNota(i)
-    Ctrl ->> Ctrl: notas.remove(i)
-    Ctrl ->> VistaNotas: mostrarNotas(listadoDeContenidos)
-    VistaNotas -->> Usuario: Nota eliminada de la lista
+    Usuario ->> Vista: Selecciona nota (índice i)
+    Usuario ->> Vista: Clic en "Eliminar"
+    Vista ->> Ctrl: notificarEliminarNota(i)
+    Ctrl ->> Gestor: eliminarNota(i)
+    Gestor ->> Gestor: notas.remove(i)
+    Gestor -->> Ctrl: retornar lista actualizada de notas
+    Ctrl ->> Vista: mostrarNotas(listadoDeStrings)
+    Vista -->> Usuario: La nota ha sido eliminada de la lista
 ```
 
----
+Para la opción de "Eliminar todas", el flujo es similar, pero el `ControladorNotas` llamaría al método `eliminarTodas()` del `GestorNotas`.
 
-#### HU3 – Eliminar todas las notas
+-----
+
+#### HU3 – Guardar notas en `.txt`
+
+Este es el diagrama más detallado, ya que refleja el flujo completo de datos para guardar una nota específica, incluyendo la interacción con la `Vista` para obtener la ruta del archivo y la delegación a la capa de persistencia (`NotaDAO`).
 
 ```mermaid
 sequenceDiagram
     actor Usuario
-    participant VistaNotas as VistaNotas
+    participant Vista as VistaNotas
     participant Ctrl as ControladorNotas
-
-    Usuario ->> VistaNotas: Clic en "Eliminar Todas"
-    VistaNotas ->> Ctrl: eliminarTodasNotas()
-    Ctrl ->> Ctrl: notas.clear()
-    Ctrl ->> VistaNotas: mostrarNotas([])
-    VistaNotas -->> Usuario: Lista vacía
-```
-
----
-
-#### HU4 – Guardar notas en `.txt`
-
-```mermaid
-sequenceDiagram
-    actor Usuario
-    participant VistaNotas as VistaNotas
-    participant Ctrl as ControladorNotas
+    participant Gestor as GestorNotas
     participant DAO as NotaDAO
 
-    Usuario ->> VistaNotas: Clic en "Guardar"
-    VistaNotas ->> Ctrl: guardarNotas()
-    Ctrl ->> DAO: guardarNotas(notas)
-    DAO -->> Ctrl: confirmación de escritura
-    Ctrl ->> VistaNotas: mostrarMensaje("Guardado exitoso")
-    VistaNotas -->> Usuario: Diálogo de éxito
+    Usuario ->> Vista: Selecciona una nota
+    Usuario ->> Vista: Clic en "Guardar"
+    Vista -->> Usuario: Diálogo para seleccionar ruta de guardado
+    Usuario ->> Vista: Selecciona ruta y nombre de archivo
+    Vista ->> Ctrl: notificarGuardarNota(indice, rutaArchivo)
+    Ctrl ->> Gestor: guardarNota(indice, rutaArchivo)
+    Gestor ->> Gestor: nota = getNota(indice)
+    Gestor ->> DAO: guardarNotaEnArchivo(nota, rutaArchivo)
+    DAO -->> Gestor: retornar boolean de éxito
+    Gestor -->> Ctrl: retornar boolean de éxito
+    Ctrl ->> Vista: mostrarMensaje(mensaje)
+    Vista -->> Usuario: Muestra un mensaje de éxito o error
 ```
 
----
+-----
+
+#### HU4 – Interfaz Gráfica (GUI)
+
+La existencia de la GUI (HU4) se evidencia en cada diagrama de secuencia. La `VistaNotas` está presente en todas las interacciones, mostrando la información y capturando las acciones del usuario.
+
+-----
 
 #### HU5 – Buscar palabra en las notas
 
+Este diagrama muestra cómo el `Controlador` delega la lógica de búsqueda al `GestorNotas` y luego actualiza la `Vista` con los resultados.
+
 ```mermaid
 sequenceDiagram
     actor Usuario
-    participant VistaNotas as VistaNotas
+    participant Vista as VistaNotas
     participant Ctrl as ControladorNotas
+    participant Gestor as GestorNotas
 
-    Usuario ->> VistaNotas: Escribe texto de búsqueda
-    Usuario ->> VistaNotas: Clic en "Buscar"
-    VistaNotas ->> Ctrl: buscarNotas(palabraClave)
-    Ctrl ->> Ctrl: filtrar `notas` por coincidencia
-    Ctrl -->> VistaNotas: mostrarNotas(filtrado)
-    VistaNotas -->> Usuario: Sólo se muestran coincidencias
+    Usuario ->> Vista: Escribe palabra de búsqueda
+    Usuario ->> Vista: Clic en "Buscar"
+    Vista ->> Ctrl: notificarBuscar(palabraClave)
+    Ctrl ->> Gestor: buscar(palabraClave)
+    Gestor ->> Gestor: encuentra notas que contienen la palabra
+    Gestor -->> Ctrl: retornar notas coincidentes
+    Ctrl ->> Vista: mostrarNotas(listaDeStringsCoincidentes)
+    Vista -->> Usuario: Se muestran solo las notas con coincidencias
 ```
-
----
-
-> **HU4 (Interfaz Gráfica)**
-> La HU4 (existencia y funcionalidad de la GUI) está implícita en todos los diagramas: cada botón de la vista dispara un listener que invoca al controlador y actualiza la interfaz via `mostrarNotas()` o `mostrarMensaje()`.
-
----
 
 ### Diseño de Interfaz de Usuario
 
@@ -542,21 +678,25 @@ skinparam salt {
 ### Diseño de Componentes
 
 ```mermaid
-graph TB
+graph TD
     subgraph GUI
-        UI[InterfazUsuario]
+        VistaNotas[VistaNotas]
     end
 
-    subgraph Lógica
-        CN[ControladorNotas]
+    subgraph Lógica de Negocio
+        ControladorNotas[ControladorNotas]
+        GestorNotas[GestorNotas]
     end
 
-    subgraph Modelo
+    subgraph Persistencia
+        NotaDAO[NotaDAO]
         Nota[Nota]
     end
 
-    UI --> CN
-    CN --> Nota
+    VistaNotas --> ControladorNotas
+    ControladorNotas --> GestorNotas
+    GestorNotas --> Nota
+    GestorNotas --> NotaDAO
 ```
 
 
@@ -576,11 +716,263 @@ Para esto creamos una serie de paquetes.
 - vista
 - control
 
-#### Implementación de las entidades del (Modelo o Lógica)
+### 1\. Implementación de Lógica y Persistencia
+
+#### Estructura de Paquetes
+
+Organizar el código en los siguientes paquetes (o carpetas, en el caso de un IDE):
+
+  - `com.mycompany.flashnotes.modelo` (o `logica`): Contendrá la clase `Nota` y `GestorNotas`.
+  - `com.mycompany.flashnotes.persistencia`: Contendrá la clase `NotaDAO`.
+  - `com.mycompany.flashnotes.vista`: Contendrá la clase `VistaNotas`.
+  - `com.flashnotes.controlador`: Contendrá la clase `ControladorNotas`.
+  - `com.flashnotes.main`: Contendrá la clase principal con el método `main`.
+
+#### a) Implementación de las entidades (Modelo)
+
+Aquí se creará la clase `Nota` con sus atributos y métodos.
+
+**Clase `Nota`:**
+
+```java
+package com.mycompany.flashnotes.modelo;
+
+import java.io.Serializable;
+
+/**
+ *
+ * @author jesus
+ */
+public class Nota implements Serializable {
+    private String contenido;
+
+    public Nota(String contenido) {
+        this.contenido = contenido;
+    }
+
+    public String getContenido() {
+        return contenido;
+    }
+
+    public void setContenido(String contenido) {
+        this.contenido = contenido;
+    }
+}
+```
+
+> **Nota:** La interfaz `Serializable` es importante para que el objeto `Nota` pueda ser guardado en archivos de forma eficiente.
+
+#### b) Implementación de la capa de Persistencia (`NotaDAO`)
+
+Aquí se implementará la clase `NotaDAO` que hemos diseñado.
+
+**Clase `NotaDAO`:**
+
+```java
+package com.mycompany.flashnotes.persistencia;
+
+import com.mycompany.flashnotes.modelo.Nota;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+
+/**
+ *
+ * @author jesus
+ */
+public class NotaDAO {
+    //Implementación de métodos para guardar/cargar archivos
+    public boolean guardarNotaEnArchivo(Nota nota, String rutaArchivo) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(rutaArchivo))) {
+            writer.write(nota.getContenido());
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public Nota cargarNotaDesdeArchivo(String rutaArchivo) {
+        StringBuilder contenido = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new FileReader(rutaArchivo))) {
+            String linea;
+            while ((linea = reader.readLine()) != null) {
+                contenido.append(linea).append(System.lineSeparator());
+            }
+            return new Nota(contenido.toString().trim());
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    public void eliminarArchivoNotas(){
+        // No aplica en notas temporales
+    }
+}
+
+```
 
 
+#### c) Implementación de la Lógica del Negocio (`GestorNotas`)
 
-### Pruebas Unitarias de Integración
+Esta clase conectará la lógica con la persistencia.
+
+**Clase `GestorNotas`:**
+
+```java
+package com.mycompany.flashnotes.modelo;
+
+import com.mycompany.flashnotes.persistencia.NotaDAO;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ *
+ * @author jesus
+ */
+public class GestorNotas {
+    private List<Nota> notas;
+    private NotaDAO notaDAO;
+    
+    public GestorNotas() {
+        this.notas = new ArrayList<>();
+        this.notaDAO = new NotaDAO();
+        //En caso de crear una Nota inicial()
+    }
+    
+    public void crearNota(String contenido){
+        notas.add(new Nota(contenido));
+    }
+    
+    public void eliminarNota(int indice){
+        if(indice >= 0 && indice < notas.size()){
+            notas.remove(indice);
+        }
+    }
+    
+    public boolean guardarNota(int indice, String rutaArchivo){
+        if(indice >= 0 && indice < notas.size()){
+            Nota notaAGuardar = notas.get(indice);
+            return notaDAO.guardarNotaEnArchivo(notaAGuardar, rutaArchivo);
+        }
+        return false;
+    }
+    
+    //... Implementación de buscar, eliminarTodas, etc.
+    
+    //Retornar las Notas
+    public List<String> getContenidoNotas(){
+        List<String> contenidos = new ArrayList<>();
+        for(Nota nota: notas){
+            contenidos.add(nota.getContenido());
+        }
+        return contenidos;
+    }
+}
+
+```
+
+-----
+
+### 2\. Codificación de la GUI de Usuario
+
+#### a) Codificación de las interfaces Swing
+
+Aquí crearás la clase `VistaNotas` con todos los componentes y listeners.
+
+**Clase `VistaNotas`:**
+
+```java
+package com.flashnotes.vista;
+
+import javax.swing.*;
+import java.awt.event.ActionListener;
+import java.util.List;
+
+public class VistaNotas extends JFrame {
+    private JTextArea notasArea;
+    private JButton btnCrear, btnEliminar, btnGuardar;
+    
+    public VistaNotas() {
+        // Lógica para inicializar la ventana, botones, JTextArea, etc.
+        // Basándote en el mockup de la GUI
+        setTitle("FlashNotes - Notas Temporales");
+        // ... configuración del layout y componentes
+    }
+
+    public void mostrarNotas(List<String> contenidos) {
+        // Lógica para actualizar la lista de notas en la interfaz
+    }
+
+    public void addCrearListener(ActionListener listenForCrearButton) {
+        btnCrear.addActionListener(listenForCrearButton);
+    }
+    
+    public String getTextoNota() {
+        return notasArea.getText();
+    }
+    
+    // ... Implementación de otros getters y listeners
+}
+```
+
+#### b) Conexión de la UI con la lógica del negocio
+
+Aquí se implementa la clase `ControladorNotas` para unir la `Vista` y el `Modelo`.
+
+**Clase `ControladorNotas`:**
+
+```java
+// Archivo: com/flashnotes/controlador/ControladorNotas.java
+package com.flashnotes.controlador;
+
+import com.flashnotes.modelo.GestorNotas;
+import com.flashnotes.vista.VistaNotas;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+public class ControladorNotas implements ActionListener {
+    private GestorNotas gestor;
+    private VistaNotas vista;
+    
+    public ControladorNotas(GestorNotas gestor, VistaNotas vista) {
+        this.gestor = gestor;
+        this.vista = vista;
+        // Asignar este controlador como listener para los botones
+        this.vista.addCrearListener(this);
+        // ... Asignar otros listeners
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        String comando = e.getActionCommand();
+        if ("crear".equals(comando)) {
+            gestor.crearNota("Nueva nota");
+            vista.mostrarNotas(gestor.getContenidosNotas());
+        } else if ("guardar".equals(comando)) {
+            // Lógica para guardar una nota
+        }
+    }
+}
+```
+
+-----
+
+### 3\. Pruebas Unitarias y de Integración
+
+Una vez que las clases estén implementadas, es fundamental probarlas. Te recomiendo usar un framework de pruebas como **JUnit**.
+
+#### a) Pruebas Unitarias
+
+  - **Para `GestorNotas`:** Verifica que los métodos `crearNota()`, `eliminarNota()`, y `buscar()` funcionen correctamente de forma aislada.
+  - **Para `NotaDAO`:** Prueba que `guardarNotaEnArchivo()` guarde un objeto en un archivo y que `cargarNotaDesdeArchivo()` lo lea correctamente.
+
+#### b) Pruebas de Integración
+
+  - **Flujo completo:** Puedes simular un clic en un botón del controlador y verificar que la lógica del negocio se ejecute y que la vista se actualice correctamente.
 
 ## Pruebas
 ## Despliegue

@@ -1,6 +1,12 @@
 package com.mycompany.flashnotes.modelo;
 
-public class Nota {
+import java.io.Serializable;
+
+/**
+ *
+ * @author jesus
+ */
+public class Nota implements Serializable {
     private String contenido;
 
     public Nota(String contenido) {
