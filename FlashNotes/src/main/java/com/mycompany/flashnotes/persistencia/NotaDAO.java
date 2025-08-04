@@ -3,6 +3,7 @@ package com.mycompany.flashnotes.persistencia;
 import com.mycompany.flashnotes.modelo.Nota;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -12,7 +13,6 @@ import java.io.IOException;
  * @author jesus
  */
 public class NotaDAO {
-    //Implementación de métodos para guardar/cargar archivos
     public boolean guardarNotaEnArchivo(Nota nota, String rutaArchivo) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(rutaArchivo))) {
             writer.write(nota.getContenido());
@@ -36,8 +36,9 @@ public class NotaDAO {
             return null;
         }
     }
-    
-    public void eliminarArchivoNotas(){
-        // No aplica en notas temporales
+
+    public boolean eliminarArchivo(String rutaArchivo) {
+        File file = new File(rutaArchivo);
+        return file.exists() && file.delete();
     }
 }

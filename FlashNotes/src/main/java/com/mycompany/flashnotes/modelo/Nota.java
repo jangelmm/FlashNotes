@@ -6,7 +6,7 @@ import java.io.Serializable;
  *
  * @author jesus
  */
-public class Nota implements Serializable {
+public class Nota {
     private String contenido;
 
     public Nota(String contenido) {

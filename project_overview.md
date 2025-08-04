@@ -1,3 +1,328 @@
+# Estructura del proyecto
+
+```
+FlashNotes
+├── FlashNotes
+│   ├── src
+│   │   ├── main
+│   │   │   └── java
+│   │   │       ├── com
+│   │   │       │   └── mycompany
+│   │   │       │       └── flashnotes
+│   │   │       │           ├── control
+│   │   │       │           │   └── ControladorNotas.java
+│   │   │       │           ├── modelo
+│   │   │       │           │   ├── GestorNotas.java
+│   │   │       │           │   └── Nota.java
+│   │   │       │           ├── persistencia
+│   │   │       │           │   └── NotaDAO.java
+│   │   │       │           ├── vista
+│   │   │       │           │   ├── VistaNotas.form
+│   │   │       │           │   └── VistaNotas.java
+│   │   │       │           └── FlashNotes.java
+│   │   │       └── imagenes
+│   │   │           ├── advertencia.png
+│   │   │           ├── borrar.png
+│   │   │           ├── buscar.png
+│   │   │           ├── destello.png
+│   │   │           ├── guardar.png
+│   │   │           └── nuevo.png
+│   │   └── test
+│   │       └── java
+│   ├── target
+│   │   ├── classes
+│   │   │   ├── com
+│   │   │   │   └── mycompany
+│   │   │   │       └── flashnotes
+│   │   │   │           ├── control
+│   │   │   │           │   └── ControladorNotas.class
+│   │   │   │           ├── modelo
+│   │   │   │           │   ├── GestorNotas.class
+│   │   │   │           │   └── Nota.class
+│   │   │   │           ├── persistencia
+│   │   │   │           │   └── NotaDAO.class
+│   │   │   │           ├── vista
+│   │   │   │           │   ├── VistaNotas$1.class
+│   │   │   │           │   ├── VistaNotas$2.class
+│   │   │   │           │   ├── VistaNotas.class
+│   │   │   │           │   └── VistaNotas.form
+│   │   │   │           └── FlashNotes.class
+│   │   │   └── imagenes
+│   │   │       ├── advertencia.png
+│   │   │       ├── borrar.png
+│   │   │       ├── buscar.png
+│   │   │       ├── destello.png
+│   │   │       ├── guardar.png
+│   │   │       └── nuevo.png
+│   │   ├── generated-sources
+│   │   │   └── annotations
+│   │   ├── maven-status
+│   │   │   └── maven-compiler-plugin
+│   │   │       └── compile
+│   │   │           └── default-compile
+│   │   │               ├── createdFiles.lst
+│   │   │               └── inputFiles.lst
+│   │   └── test-classes
+│   ├── notas.txt
+│   ├── pom.xml
+│   └── script.py
+├── Images
+│   └── Fase-2-Diseno-GUI-PlantUML.png
+├── .gitignore
+└── README.md
+```
+
+## `.gitignore`
+
+```text
+/FlashNotes/target/
+```
+
+## `FlashNotes\src\main\java\com\mycompany\flashnotes\FlashNotes.java`
+
+```java
+package com.mycompany.flashnotes;
+
+import com.mycompany.flashnotes.control.ControladorNotas;
+import com.mycompany.flashnotes.modelo.GestorNotas;
+import com.mycompany.flashnotes.vista.VistaNotas;
+
+
+/**
+ *
+ * @author jesus
+ */
+
+public class FlashNotes {
+    public static void main(String[] args) {
+        java.awt.EventQueue.invokeLater(() -> {
+            VistaNotas vista = new VistaNotas();
+            GestorNotas gestor = new GestorNotas();
+            new ControladorNotas(gestor, vista);
+            vista.setVisible(true);
+        });
+    }
+}```
+
+## `FlashNotes\src\main\java\com\mycompany\flashnotes\control\ControladorNotas.java`
+
+```java
+package com.mycompany.flashnotes.control;
+
+
+import com.mycompany.flashnotes.modelo.GestorNotas;
+import com.mycompany.flashnotes.vista.VistaNotas;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.List;
+import javax.swing.JFileChooser;
+
+/**
+ *
+ * @author jesus
+ */
+public class ControladorNotas {
+    private final GestorNotas gestor;
+    private final VistaNotas vista;
+
+    public ControladorNotas(GestorNotas gestor, VistaNotas vista) {
+        this.gestor = gestor;
+        this.vista = vista;
+        initController();
+    }
+
+    private void initController() {
+        vista.addCrearNotaListener(e -> crearNota());
+        vista.addGuardarNotaListener(e -> guardarNota());
+        vista.addLimpiarTodoListener(e -> limpiarTodas());
+        vista.addBuscarListener(e -> buscarNota());
+        vista.setContenidoNota("");
+        actualizarVista();
+    }
+
+    private void crearNota() {
+        gestor.crearNota("");
+        actualizarVista();
+    }
+
+    private void guardarNota() {
+        int idx = vista.getNotaSeleccionadaIndex();
+        JFileChooser chooser = new JFileChooser();
+        if (chooser.showSaveDialog(vista) == JFileChooser.APPROVE_OPTION) {
+            String ruta = chooser.getSelectedFile().getAbsolutePath();
+            gestor.guardarNota(idx, ruta);
+        }
+    }
+
+    private void limpiarTodas() {
+        gestor.eliminarTodas();
+        vista.setContenidoNota("");
+        actualizarVista();
+    }
+
+    private void buscarNota() {
+        String texto = vista.getTextoBusqueda();
+        List<Integer> resultados = gestor.buscar(texto);
+        if (!resultados.isEmpty()) {
+            int primero = resultados.get(0);
+            vista.mostrarNotas(gestor.getContenidoNotas());
+            vista.seleccionarNota(primero);
+            vista.setContenidoNota(gestor.getNotas().get(primero).getContenido());
+        }
+    }
+
+    private void actualizarVista() {
+        vista.mostrarNotas(gestor.getContenidoNotas());
+    }
+}
+
+```
+
+## `FlashNotes\src\main\java\com\mycompany\flashnotes\modelo\GestorNotas.java`
+
+```java
+package com.mycompany.flashnotes.modelo;
+
+import com.mycompany.flashnotes.persistencia.NotaDAO;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ *
+ * @author jesus
+ */
+public class GestorNotas {
+    private final List<Nota> notas;
+    private final NotaDAO notaDAO;
+
+    public GestorNotas() {
+        this.notas = new ArrayList<>();
+        this.notaDAO = new NotaDAO();
+    }
+
+    public void crearNota(String contenido) {
+        notas.add(new Nota(contenido));
+    }
+
+    public void eliminarNota(int indice) {
+        if (indice >= 0 && indice < notas.size()) {
+            notas.remove(indice);
+        }
+    }
+
+    public void eliminarTodas() {
+        notas.clear();
+    }
+
+    public boolean guardarNota(int indice, String rutaArchivo) {
+        if (indice >= 0 && indice < notas.size()) {
+            Nota notaAGuardar = notas.get(indice);
+            return notaDAO.guardarNotaEnArchivo(notaAGuardar, rutaArchivo);
+        }
+        return false;
+    }
+
+    public List<Integer> buscar(String texto) {
+        List<Integer> resultados = new ArrayList<>();
+        for (int i = 0; i < notas.size(); i++) {
+            if (notas.get(i).getContenido().contains(texto)) {
+                resultados.add(i);
+            }
+        }
+        return resultados;
+    }
+
+    public List<Nota> getNotas() {
+        return new ArrayList<>(notas);
+    }
+
+    public List<String> getContenidoNotas() {
+        List<String> contenidos = new ArrayList<>();
+        notas.forEach(n -> contenidos.add(n.getContenido()));
+        return contenidos;
+    }
+}
+```
+
+## `FlashNotes\src\main\java\com\mycompany\flashnotes\modelo\Nota.java`
+
+```java
+package com.mycompany.flashnotes.modelo;
+
+import java.io.Serializable;
+
+/**
+ *
+ * @author jesus
+ */
+public class Nota {
+    private String contenido;
+
+    public Nota(String contenido) {
+        this.contenido = contenido;
+    }
+
+    public String getContenido() {
+        return contenido;
+    }
+
+    public void setContenido(String contenido) {
+        this.contenido = contenido;
+    }
+}```
+
+## `FlashNotes\src\main\java\com\mycompany\flashnotes\persistencia\NotaDAO.java`
+
+```java
+package com.mycompany.flashnotes.persistencia;
+
+import com.mycompany.flashnotes.modelo.Nota;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+
+/**
+ *
+ * @author jesus
+ */
+public class NotaDAO {
+    public boolean guardarNotaEnArchivo(Nota nota, String rutaArchivo) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(rutaArchivo))) {
+            writer.write(nota.getContenido());
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public Nota cargarNotaDesdeArchivo(String rutaArchivo) {
+        StringBuilder contenido = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new FileReader(rutaArchivo))) {
+            String linea;
+            while ((linea = reader.readLine()) != null) {
+                contenido.append(linea).append(System.lineSeparator());
+            }
+            return new Nota(contenido.toString().trim());
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public boolean eliminarArchivo(String rutaArchivo) {
+        File file = new File(rutaArchivo);
+        return file.exists() && file.delete();
+    }
+}
+```
+
+## `FlashNotes\src\main\java\com\mycompany\flashnotes\vista\VistaNotas.java`
+
+```java
 package com.mycompany.flashnotes.vista;
 
 import java.awt.Color;
@@ -90,7 +415,7 @@ public class VistaNotas extends javax.swing.JFrame {
         panelCuerpoIzquierdo.repaint();
     }
 
-    public void seleccionarNota(int index) {
+    private void seleccionarNota(int index) {
         this.notaSeleccionadaIndex = index;
         for (int i = 0; i < panelCuerpoIzquierdo.getComponentCount(); i++) {
             ((JLabel) panelCuerpoIzquierdo.getComponent(i)).setBorder(defaultBorder);
@@ -371,3 +696,5 @@ public class VistaNotas extends javax.swing.JFrame {
     private javax.swing.JTextField txtElementoBuscarNotaActual;
     // End of variables declaration//GEN-END:variables
 }
+```
+
