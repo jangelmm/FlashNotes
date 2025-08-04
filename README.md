@@ -725,8 +725,8 @@ Organizar el código en los siguientes paquetes (o carpetas, en el caso de un ID
   - `com.mycompany.flashnotes.modelo` (o `logica`): Contendrá la clase `Nota` y `GestorNotas`.
   - `com.mycompany.flashnotes.persistencia`: Contendrá la clase `NotaDAO`.
   - `com.mycompany.flashnotes.vista`: Contendrá la clase `VistaNotas`.
-  - `com.flashnotes.controlador`: Contendrá la clase `ControladorNotas`.
-  - `com.flashnotes.main`: Contendrá la clase principal con el método `main`.
+  - `com.mycompany.flashnotes.control`: Contendrá la clase `ControladorNotas`.
+  - `com.mycompany.flashnotes`: Contendrá la clase principal con el método `main`.
 
 #### a) Implementación de las entidades (Modelo)
 
@@ -885,38 +885,394 @@ Aquí crearás la clase `VistaNotas` con todos los componentes y listeners.
 
 **Clase `VistaNotas`:**
 
+[VistaNotas.java](./FlashNotes/src/main/java/com/mycompany/flashnotes/vista/VistaNotas.java)
+
 ```java
-package com.flashnotes.vista;
+package com.mycompany.flashnotes.vista;
 
-import javax.swing.*;
+import java.awt.Color;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.border.Border;
 
-public class VistaNotas extends JFrame {
-    private JTextArea notasArea;
-    private JButton btnCrear, btnEliminar, btnGuardar;
+/**
+ *
+ * @author jesus
+ */
+public class VistaNotas extends javax.swing.JFrame {
     
+    private int notaSeleccionadaIndex = -1;
+    private final Border defaultBorder = BorderFactory.createEmptyBorder(5, 5, 5, 5);
+    private final Border selectedBorder = BorderFactory.createLineBorder(new Color(155, 182, 255), 2);
+
+    /**
+     * Creates new form VistaNotas
+     */
     public VistaNotas() {
-        // Lógica para inicializar la ventana, botones, JTextArea, etc.
-        // Basándote en el mockup de la GUI
-        setTitle("FlashNotes - Notas Temporales");
-        // ... configuración del layout y componentes
+        initComponents();
+        // Inicializa el panel izquierdo para que use un BoxLayout vertical
+        panelCuerpoIzquierdo.setLayout(new javax.swing.BoxLayout(panelCuerpoIzquierdo, javax.swing.BoxLayout.Y_AXIS));
     }
-
+    
+    // Método público para que el controlador pueda registrar sus listeners
+    public void addCrearNotaListener(ActionListener listenForCrearBtn) {
+        btnElementoNuevaNota.addActionListener(listenForCrearBtn);
+        opcNuevaNota.addActionListener(listenForCrearBtn);
+    }
+    
+    public void addGuardarNotaListener(ActionListener listenForGuardarBtn) {
+        btnElementoGuardarTxt.addActionListener(listenForGuardarBtn);
+        opcGuardarElemento.addActionListener(listenForGuardarBtn);
+    }
+    
+    public void addLimpiarTodoListener(ActionListener listenForLimpiarBtn) {
+        btnElementoLimpiarTodo.addActionListener(listenForLimpiarBtn);
+        opcLimipiarTodo.addActionListener(listenForLimpiarBtn);
+    }
+    
+    // Método para obtener el contenido de la nota del panel derecho
+    public String getContenidoNota() {
+        return txtCuerpoDerContenidoNota.getText();
+    }
+    
+    // Método para establecer el contenido de la nota en el panel derecho
+    public void setContenidoNota(String contenido) {
+        txtCuerpoDerContenidoNota.setText(contenido);
+    }
+    
+    // Método para obtener el índice de la nota actualmente seleccionada
+    public int getNotaSeleccionadaIndex() {
+        return notaSeleccionadaIndex;
+    }
+    
+    // Método para actualizar la lista de notas en el panel izquierdo
     public void mostrarNotas(List<String> contenidos) {
-        // Lógica para actualizar la lista de notas en la interfaz
+        panelCuerpoIzquierdo.removeAll(); // Limpiar la lista anterior
+        panelCuerpoIzquierdo.revalidate();
+        panelCuerpoIzquierdo.repaint();
+
+        for (int i = 0; i < contenidos.size(); i++) {
+            String contenido = contenidos.get(i);
+            
+            // Crea un JLabel para cada nota
+            JLabel notaLabel = new JLabel();
+            notaLabel.setText(getTituloNota(contenido));
+            notaLabel.setBorder(defaultBorder);
+            notaLabel.putClientProperty("index", i); // Guarda el índice como propiedad
+            
+            // Añade un MouseListener para detectar clics
+            notaLabel.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    JLabel source = (JLabel) e.getSource();
+                    int index = (int) source.getClientProperty("index");
+                    seleccionarNota(index);
+                }
+            });
+
+            panelCuerpoIzquierdo.add(notaLabel);
+        }
+        
+        panelCuerpoIzquierdo.revalidate();
+        panelCuerpoIzquierdo.repaint();
+    }
+    
+    // Método para manejar la selección de una nota
+    private void seleccionarNota(int index) {
+        this.notaSeleccionadaIndex = index;
+        
+        // Deselecciona el label anterior
+        for (int i = 0; i < panelCuerpoIzquierdo.getComponentCount(); i++) {
+            JLabel label = (JLabel) panelCuerpoIzquierdo.getComponent(i);
+            label.setBorder(defaultBorder);
+        }
+
+        // Selecciona el nuevo label y actualiza el contenido de la nota
+        if (index >= 0 && index < panelCuerpoIzquierdo.getComponentCount()) {
+            JLabel selectedLabel = (JLabel) panelCuerpoIzquierdo.getComponent(index);
+            selectedLabel.setBorder(selectedBorder);
+            // NOTA: El controlador se encargará de actualizar el contenido en el JTextArea.
+        }
+    }
+    
+    // Método auxiliar para generar el título de la nota
+    private String getTituloNota(String contenido) {
+        if (contenido == null || contenido.trim().isEmpty()) {
+            return "Nueva Nota";
+        }
+        String[] palabras = contenido.trim().split("\\s+");
+        StringBuilder titulo = new StringBuilder();
+        for (int i = 0; i < Math.min(3, palabras.length); i++) {
+            titulo.append(palabras[i]).append(" ");
+        }
+        return titulo.toString().trim();
     }
 
-    public void addCrearListener(ActionListener listenForCrearButton) {
-        btnCrear.addActionListener(listenForCrearButton);
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">                          
+    private void initComponents() {
+
+        panelPrincipal = new javax.swing.JPanel();
+        panelSuperior = new javax.swing.JPanel();
+        lblEncabezadoImg = new javax.swing.JLabel();
+        lblEncabezadoTxt = new javax.swing.JLabel();
+        lblEncabezadoNot = new javax.swing.JLabel();
+        panelElementos = new javax.swing.JPanel();
+        btnElementoNuevaNota = new javax.swing.JButton();
+        btnElementoGuardarTxt = new javax.swing.JButton();
+        btnElementoLimpiarTodo = new javax.swing.JButton();
+        lblElementoIconoBuscar = new javax.swing.JLabel();
+        txtElementoBuscarNotaActual = new javax.swing.JTextField();
+        panelCuerpo = new javax.swing.JPanel();
+        scrollPanelCuerpoIzquierdo = new javax.swing.JScrollPane();
+        panelCuerpoIzquierdo = new javax.swing.JPanel();
+        lblCuerpoIzquierdoNotasActivas = new javax.swing.JLabel();
+        panelCuerpoDerecho = new javax.swing.JPanel();
+        scrollPanelCuerpoDer = new javax.swing.JScrollPane();
+        txtCuerpoDerContenidoNota = new javax.swing.JTextArea();
+        panelInferior = new javax.swing.JPanel();
+        lblInferiorInformacion = new javax.swing.JLabel();
+        lblInferiorAdvertencia = new javax.swing.JLabel();
+        menuBarra = new javax.swing.JMenuBar();
+        menuOpciones = new javax.swing.JMenu();
+        opcNuevaNota = new javax.swing.JMenuItem();
+        opcGuardarElemento = new javax.swing.JMenuItem();
+        opcLimipiarTodo = new javax.swing.JMenuItem();
+        menuApariencia = new javax.swing.JMenu();
+        opcTemaOscuro = new javax.swing.JRadioButtonMenuItem();
+        opcTemaClaro = new javax.swing.JRadioButtonMenuItem();
+        menuAyuda = new javax.swing.JMenu();
+        opcDocumentacion = new javax.swing.JMenuItem();
+        opcSitioWeb = new javax.swing.JMenuItem();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("FlashNotes");
+        setMinimumSize(new java.awt.Dimension(600, 350));
+
+        panelPrincipal.setLayout(new javax.swing.BoxLayout(panelPrincipal, javax.swing.BoxLayout.Y_AXIS));
+
+        panelSuperior.setMaximumSize(new java.awt.Dimension(32767, 50));
+        panelSuperior.setPreferredSize(new java.awt.Dimension(400, 50));
+
+        lblEncabezadoImg.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/destello.png"))); // NOI18N
+        panelSuperior.add(lblEncabezadoImg);
+
+        lblEncabezadoTxt.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        lblEncabezadoTxt.setText("FlashNotes - Notas Temporales");
+        panelSuperior.add(lblEncabezadoTxt);
+
+        lblEncabezadoNot.setText("2 notas act.");
+        panelSuperior.add(lblEncabezadoNot);
+
+        panelPrincipal.add(panelSuperior);
+
+        panelElementos.setMaximumSize(new java.awt.Dimension(32767, 50));
+        panelElementos.setPreferredSize(new java.awt.Dimension(400, 50));
+
+        btnElementoNuevaNota.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/nuevo.png"))); // NOI18N
+        btnElementoNuevaNota.setText("Nueva Nota");
+        panelElementos.add(btnElementoNuevaNota);
+
+        btnElementoGuardarTxt.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/guardar.png"))); // NOI18N
+        btnElementoGuardarTxt.setText("Guardar TXT");
+        panelElementos.add(btnElementoGuardarTxt);
+
+        btnElementoLimpiarTodo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/borrar.png"))); // NOI18N
+        btnElementoLimpiarTodo.setText("Limpiar Todo");
+        panelElementos.add(btnElementoLimpiarTodo);
+
+        lblElementoIconoBuscar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/buscar.png"))); // NOI18N
+        panelElementos.add(lblElementoIconoBuscar);
+
+        txtElementoBuscarNotaActual.setToolTipText("");
+        txtElementoBuscarNotaActual.setMinimumSize(new java.awt.Dimension(90, 26));
+        txtElementoBuscarNotaActual.setPreferredSize(new java.awt.Dimension(100, 26));
+        panelElementos.add(txtElementoBuscarNotaActual);
+
+        panelPrincipal.add(panelElementos);
+
+        panelCuerpo.setLayout(new javax.swing.BoxLayout(panelCuerpo, javax.swing.BoxLayout.LINE_AXIS));
+
+        scrollPanelCuerpoIzquierdo.setMaximumSize(new java.awt.Dimension(150, 32767));
+        scrollPanelCuerpoIzquierdo.setMinimumSize(new java.awt.Dimension(150, 22));
+        scrollPanelCuerpoIzquierdo.setPreferredSize(new java.awt.Dimension(150, 100));
+
+        panelCuerpoIzquierdo.setLayout(new javax.swing.BoxLayout(panelCuerpoIzquierdo, javax.swing.BoxLayout.Y_AXIS));
+
+        lblCuerpoIzquierdoNotasActivas.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lblCuerpoIzquierdoNotasActivas.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblCuerpoIzquierdoNotasActivas.setText("Notas Activas");
+        lblCuerpoIzquierdoNotasActivas.setMaximumSize(new java.awt.Dimension(170, 20));
+        lblCuerpoIzquierdoNotasActivas.setMinimumSize(new java.awt.Dimension(120, 20));
+        lblCuerpoIzquierdoNotasActivas.setPreferredSize(new java.awt.Dimension(120, 20));
+        panelCuerpoIzquierdo.add(lblCuerpoIzquierdoNotasActivas);
+
+        scrollPanelCuerpoIzquierdo.setViewportView(panelCuerpoIzquierdo);
+
+        panelCuerpo.add(scrollPanelCuerpoIzquierdo);
+
+        panelCuerpoDerecho.setBackground(new java.awt.Color(255, 153, 153));
+        panelCuerpoDerecho.setLayout(new javax.swing.BoxLayout(panelCuerpoDerecho, javax.swing.BoxLayout.LINE_AXIS));
+
+        txtCuerpoDerContenidoNota.setColumns(20);
+        txtCuerpoDerContenidoNota.setRows(5);
+        scrollPanelCuerpoDer.setViewportView(txtCuerpoDerContenidoNota);
+
+        panelCuerpoDerecho.add(scrollPanelCuerpoDer);
+
+        panelCuerpo.add(panelCuerpoDerecho);
+
+        panelPrincipal.add(panelCuerpo);
+
+        panelInferior.setMaximumSize(new java.awt.Dimension(32767, 25));
+        panelInferior.setPreferredSize(new java.awt.Dimension(400, 25));
+        panelInferior.setLayout(new javax.swing.BoxLayout(panelInferior, javax.swing.BoxLayout.LINE_AXIS));
+
+        lblInferiorInformacion.setText("Linea: 12, Caracteres: 445");
+        lblInferiorInformacion.setMaximumSize(new java.awt.Dimension(150, 16));
+        lblInferiorInformacion.setMinimumSize(new java.awt.Dimension(150, 16));
+        lblInferiorInformacion.setPreferredSize(new java.awt.Dimension(150, 16));
+        panelInferior.add(lblInferiorInformacion);
+
+        lblInferiorAdvertencia.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        lblInferiorAdvertencia.setForeground(new java.awt.Color(255, 204, 51));
+        lblInferiorAdvertencia.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/advertencia.png"))); // NOI18N
+        lblInferiorAdvertencia.setText("Notas temporales - Se eliminarán al cerrar");
+        panelInferior.add(lblInferiorAdvertencia);
+
+        panelPrincipal.add(panelInferior);
+
+        menuOpciones.setText("Opciones");
+
+        opcNuevaNota.setText("Nueva Nota");
+        menuOpciones.add(opcNuevaNota);
+
+        opcGuardarElemento.setText("Guardar");
+        menuOpciones.add(opcGuardarElemento);
+
+        opcLimipiarTodo.setText("LimpiarTodo");
+        menuOpciones.add(opcLimipiarTodo);
+
+        menuBarra.add(menuOpciones);
+
+        menuApariencia.setText("Apariencia");
+
+        opcTemaOscuro.setSelected(true);
+        opcTemaOscuro.setText("Oscuro");
+        menuApariencia.add(opcTemaOscuro);
+
+        opcTemaClaro.setSelected(true);
+        opcTemaClaro.setText("Claro");
+        menuApariencia.add(opcTemaClaro);
+
+        menuBarra.add(menuApariencia);
+
+        menuAyuda.setText("Ayuda");
+
+        opcDocumentacion.setText("Documentación");
+        menuAyuda.add(opcDocumentacion);
+
+        opcSitioWeb.setText("Donar");
+        menuAyuda.add(opcSitioWeb);
+
+        menuBarra.add(menuAyuda);
+
+        setJMenuBar(menuBarra);
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(panelPrincipal, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(panelPrincipal, javax.swing.GroupLayout.DEFAULT_SIZE, 240, Short.MAX_VALUE)
+        );
+
+        pack();
+    }// </editor-fold>                        
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(VistaNotas.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(VistaNotas.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(VistaNotas.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(VistaNotas.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new VistaNotas().setVisible(true);
+            }
+        });
     }
-    
-    public String getTextoNota() {
-        return notasArea.getText();
-    }
-    
-    // ... Implementación de otros getters y listeners
+
+    // Variables declaration - do not modify                     
+    private javax.swing.JButton btnElementoGuardarTxt;
+    private javax.swing.JButton btnElementoLimpiarTodo;
+    private javax.swing.JButton btnElementoNuevaNota;
+    private javax.swing.JLabel lblCuerpoIzquierdoNotasActivas;
+    private javax.swing.JLabel lblElementoIconoBuscar;
+    private javax.swing.JLabel lblEncabezadoImg;
+    private javax.swing.JLabel lblEncabezadoNot;
+    private javax.swing.JLabel lblEncabezadoTxt;
+    private javax.swing.JLabel lblInferiorAdvertencia;
+    private javax.swing.JLabel lblInferiorInformacion;
+    private javax.swing.JMenu menuApariencia;
+    private javax.swing.JMenu menuAyuda;
+    private javax.swing.JMenuBar menuBarra;
+    private javax.swing.JMenu menuOpciones;
+    private javax.swing.JMenuItem opcDocumentacion;
+    private javax.swing.JMenuItem opcGuardarElemento;
+    private javax.swing.JMenuItem opcLimipiarTodo;
+    private javax.swing.JMenuItem opcNuevaNota;
+    private javax.swing.JMenuItem opcSitioWeb;
+    private javax.swing.JRadioButtonMenuItem opcTemaClaro;
+    private javax.swing.JRadioButtonMenuItem opcTemaOscuro;
+    private javax.swing.JPanel panelCuerpo;
+    private javax.swing.JPanel panelCuerpoDerecho;
+    private javax.swing.JPanel panelCuerpoIzquierdo;
+    private javax.swing.JPanel panelElementos;
+    private javax.swing.JPanel panelInferior;
+    private javax.swing.JPanel panelPrincipal;
+    private javax.swing.JPanel panelSuperior;
+    private javax.swing.JScrollPane scrollPanelCuerpoDer;
+    private javax.swing.JScrollPane scrollPanelCuerpoIzquierdo;
+    private javax.swing.JTextArea txtCuerpoDerContenidoNota;
+    private javax.swing.JTextField txtElementoBuscarNotaActual;
+    // End of variables declaration                   
 }
+
 ```
 
 #### b) Conexión de la UI con la lógica del negocio
