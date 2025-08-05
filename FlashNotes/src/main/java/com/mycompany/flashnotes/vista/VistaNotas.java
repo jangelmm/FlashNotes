@@ -439,10 +439,10 @@ public class VistaNotas extends javax.swing.JFrame implements VistaNotasInterfac
         opcNuevaNota.setText("Nueva Nota");
         menuOpciones.add(opcNuevaNota);
 
-        opcGuardarElemento.setText("Guardar");
+        opcGuardarElemento.setText("Guardar TXT");
         menuOpciones.add(opcGuardarElemento);
 
-        opcLimipiarTodo.setText("LimpiarTodo");
+        opcLimipiarTodo.setText("Limpiar Todo");
         menuOpciones.add(opcLimipiarTodo);
 
         menuBarra.add(menuOpciones);

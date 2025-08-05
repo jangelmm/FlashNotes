@@ -16,12 +16,12 @@
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="opcGuardarElemento">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Guardar"/>
+                <Property name="text" type="java.lang.String" value="Guardar TXT"/>
               </Properties>
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="opcLimipiarTodo">
               <Properties>
-                <Property name="text" type="java.lang.String" value="LimpiarTodo"/>
+                <Property name="text" type="java.lang.String" value="Limpiar Todo"/>
               </Properties>
             </MenuItem>
           </SubComponents>
