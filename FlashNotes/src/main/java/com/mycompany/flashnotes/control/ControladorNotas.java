@@ -9,15 +9,22 @@ import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.FlatDarkLaf;
+import com.mycompany.flashnotes.vista.VistaNotasInterface;
 import java.awt.Desktop;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
+import javax.swing.text.BadLocationException;
 
 /**
  * La clase ControladorNotas es el "Controlador" en el patrón de diseño MVC.
@@ -30,7 +37,7 @@ import javax.swing.UnsupportedLookAndFeelException;
  *
  * @author jesus
  */
-public class ControladorNotas implements ActionListener {
+public class ControladorNotas implements ActionListener, CaretListener, KeyListener {
     
     // Una referencia al modelo para acceder a la lógica de negocio.
     private final GestorNotas gestor;
@@ -64,7 +71,8 @@ public class ControladorNotas implements ActionListener {
         // usando expresiones lambda, lo que es una práctica moderna y limpia.
         vista.setNotaSeleccionadaListener(this::cambiarNotaSeleccionada);
         vista.setGuardarCambiosListener(this::guardarCambiosNotaActual);
-
+        vista.setGuardarCambiosListener(this::guardarCambiosNotaActual);
+        
         // Agrega estos dos listeners para los menús de tema
         vista.addCambiarTemaOscuro(this);
         vista.addCambiarTemaClaro(this);
@@ -72,6 +80,12 @@ public class ControladorNotas implements ActionListener {
         //Agregar listener para los botones de Ayuda
         vista.addVisitarDocumentacion(this);
         vista.addVisitarSitioWeb(this);
+        
+        //Listener para el caret (Ubicación de puntero)
+        vista.addCaretListener(this);
+        
+        //Listener para buscar
+        vista.addBuscarKeyListener(this);
         
         // Si la aplicación se inicia sin notas, crea una nota vacía por defecto.
         if (gestor.getNotas().isEmpty()) {
@@ -220,6 +234,10 @@ public class ControladorNotas implements ActionListener {
         // Muestra todas las notas en el panel izquierdo de la vista.
         vista.mostrarNotas(gestor.getContenidoNotas());
         
+        // Aquí obtienes el número de notas del modelo y actualizas la vista.
+        int cantidadNotas = gestor.getNotas().size();
+        vista.actualizarConteoNotas(cantidadNotas); // Llama al nuevo método para actualizar el conteo
+        
         // Si hay notas, selecciona la primera y muestra su contenido.
         if (!gestor.getNotas().isEmpty()) {
             vista.setContenidoNota(gestor.getNota(0).getContenido());
@@ -270,5 +288,66 @@ public class ControladorNotas implements ActionListener {
         } catch (URISyntaxException ex) {
             System.out.println("Error 2");
         }
+    }
+    
+    @Override
+    public void caretUpdate(CaretEvent e) {
+        // Se obtiene el JTextArea directamente del evento.
+        // Esto es una buena práctica porque evita que el controlador
+        // tenga que conocer los detalles internos de la vista.
+        JTextArea areaDeTexto = (JTextArea) e.getSource();
+
+        int posicionCaret = areaDeTexto.getCaretPosition();
+        int numeroLinea = 1;
+        int cantidadDeCaracteres = areaDeTexto.getText().length();
+
+        try {
+            // Se calcula el número de línea basado en la posición del caret.
+            // getLineOfOffset() devuelve un índice base 0, por eso se suma 1.
+            numeroLinea = areaDeTexto.getLineOfOffset(posicionCaret) + 1;
+        } catch (BadLocationException ex) {
+            // En caso de error, se imprime la traza, pero la línea sigue siendo 1 por defecto.
+            ex.printStackTrace();
+        }
+
+        // Construir el texto a mostrar en el formato solicitado
+        String textoEstado = String.format("Línea: %d, Caracteres: %d", numeroLinea, cantidadDeCaracteres);
+
+        // Actualizar la etiqueta inferior de la vista
+        vista.setInformacionInferior(textoEstado);
+    }
+    
+    @Override
+    public void keyTyped(KeyEvent e) {
+        // No necesitamos implementar esto para este caso.
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        // Detecta si la tecla presionada es Enter
+        if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+            // Obtiene el texto de búsqueda y el contenido de la nota
+            String textoBusqueda = vista.getTextoBuscar();
+            String contenidoNota = vista.getContenidoNota();
+
+            // Verifica que el texto de búsqueda no esté vacío
+            if (textoBusqueda != null && !textoBusqueda.isEmpty() && contenidoNota != null) {
+                // Busca la primera ocurrencia del texto de búsqueda
+                int index = contenidoNota.indexOf(textoBusqueda);
+
+                if (index != -1) { // Si se encuentra la palabra
+                    // Mueve el cursor a la posición encontrada
+                    vista.setCaretPosition(index);
+                    // Opcional: puedes enfocar el JTextArea para que el usuario pueda seguir escribiendo
+                    vista.getTxtCuerpoDerContenidoNota().requestFocusInWindow();
+                }
+                // Si la palabra no se encuentra, no se hace nada.
+            }
+        }
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        // No necesitamos implementar esto para este caso.
     }
 }

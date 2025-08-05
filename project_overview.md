@@ -35,8 +35,6 @@ FlashNotes
 │   │   │   └── com
 │   │   │       └── mycompany
 │   │   │           └── flashnotes
-│   │   │               ├── control
-│   │   │               │   └── ControladorNotas.class
 │   │   │               ├── imagenes
 │   │   │               │   ├── advertencia.png
 │   │   │               │   ├── borrar.png
@@ -53,29 +51,18 @@ FlashNotes
 │   │   │               │   ├── VistaNotas$1.class
 │   │   │               │   ├── VistaNotas$2.class
 │   │   │               │   ├── VistaNotas.class
-│   │   │               │   ├── VistaNotas.form
 │   │   │               │   ├── VistaNotasInterface$GuardarCambiosListener.class
 │   │   │               │   ├── VistaNotasInterface$NotaSeleccionadaListener.class
 │   │   │               │   └── VistaNotasInterface.class
 │   │   │               └── FlashNotes.class
 │   │   ├── generated-sources
 │   │   │   └── annotations
-│   │   ├── generated-test-sources
-│   │   │   └── test-annotations
-│   │   ├── maven-archiver
-│   │   │   └── pom.properties
-│   │   ├── maven-status
-│   │   │   └── maven-compiler-plugin
-│   │   │       ├── compile
-│   │   │       │   └── default-compile
-│   │   │       │       ├── createdFiles.lst
-│   │   │       │       └── inputFiles.lst
-│   │   │       └── testCompile
-│   │   │           └── default-testCompile
-│   │   │               ├── createdFiles.lst
-│   │   │               └── inputFiles.lst
-│   │   ├── test-classes
-│   │   └── FlashNotes-1.0-SNAPSHOT.jar
+│   │   └── maven-status
+│   │       └── maven-compiler-plugin
+│   │           └── compile
+│   │               └── default-compile
+│   │                   ├── createdFiles.lst
+│   │                   └── inputFiles.lst
 │   ├── nbactions.xml
 │   ├── notas.txt
 │   ├── pom.xml
@@ -155,9 +142,20 @@ import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.FlatDarkLaf;
+import com.mycompany.flashnotes.vista.VistaNotasInterface;
+import java.awt.Desktop;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
+import javax.swing.text.BadLocationException;
 
 /**
  * La clase ControladorNotas es el "Controlador" en el patrón de diseño MVC.
@@ -170,7 +168,7 @@ import javax.swing.UnsupportedLookAndFeelException;
  *
  * @author jesus
  */
-public class ControladorNotas implements ActionListener {
+public class ControladorNotas implements ActionListener, VistaNotasInterface.NotaSeleccionadaListener, VistaNotasInterface.GuardarCambiosListener, CaretListener {
     
     // Una referencia al modelo para acceder a la lógica de negocio.
     private final GestorNotas gestor;
@@ -204,7 +202,19 @@ public class ControladorNotas implements ActionListener {
         // usando expresiones lambda, lo que es una práctica moderna y limpia.
         vista.setNotaSeleccionadaListener(this::cambiarNotaSeleccionada);
         vista.setGuardarCambiosListener(this::guardarCambiosNotaActual);
-
+        vista.setGuardarCambiosListener(this::guardarCambiosNotaActual);
+        
+        // Agrega estos dos listeners para los menús de tema
+        vista.addCambiarTemaOscuro(this);
+        vista.addCambiarTemaClaro(this);
+        
+        //Agregar listener para los botones de Ayuda
+        vista.addVisitarDocumentacion(this);
+        vista.addVisitarSitioWeb(this);
+        
+        //Listener para el caret (Ubicación de puntero)
+        vista.addCaretListener(this);
+        
         // Si la aplicación se inicia sin notas, crea una nota vacía por defecto.
         if (gestor.getNotas().isEmpty()) {
             gestor.crearNota("");
@@ -212,6 +222,7 @@ public class ControladorNotas implements ActionListener {
         
         // Carga la interfaz de usuario inicial con los datos del modelo.
         actualizarVistaCompleta();
+        cambiarTemaClaro();
     }
     
     /**
@@ -238,6 +249,12 @@ public class ControladorNotas implements ActionListener {
                 break;
             case "Claro":
                 cambiarTemaClaro();
+                break;
+            case "Documentacion":
+                visitarDocumentacion();
+                break;
+            case "Donar":
+                visitarSitioWeb();
                 break;
         }
     }
@@ -345,6 +362,10 @@ public class ControladorNotas implements ActionListener {
         // Muestra todas las notas en el panel izquierdo de la vista.
         vista.mostrarNotas(gestor.getContenidoNotas());
         
+        // Aquí obtienes el número de notas del modelo y actualizas la vista.
+        int cantidadNotas = gestor.getNotas().size();
+        vista.actualizarConteoNotas(cantidadNotas); // Llama al nuevo método para actualizar el conteo
+        
         // Si hay notas, selecciona la primera y muestra su contenido.
         if (!gestor.getNotas().isEmpty()) {
             vista.setContenidoNota(gestor.getNota(0).getContenido());
@@ -360,10 +381,6 @@ public class ControladorNotas implements ActionListener {
         try {
             UIManager.setLookAndFeel(new FlatDarkLaf()); // Usa FlatDarkLaf para el tema oscuro
             SwingUtilities.updateComponentTreeUI(vista);
-            vista.invalidate();
-            vista.validate();
-            vista.repaint();
-
         } catch (UnsupportedLookAndFeelException e) {
             e.printStackTrace();
         }
@@ -372,14 +389,65 @@ public class ControladorNotas implements ActionListener {
         try {
             UIManager.setLookAndFeel(new FlatLightLaf()); // Usa FlatLightLaf para el tema claro
             SwingUtilities.updateComponentTreeUI(vista);
-            vista.invalidate();
-            vista.validate();
-            vista.repaint();
-
         } catch (UnsupportedLookAndFeelException e) {
             e.printStackTrace();
         }
     }
+    
+    private void visitarDocumentacion(){
+        try {
+            try {
+                Desktop.getDesktop().browse(new URI("https://github.com/jangelmm/FlashNotes"));
+            } catch (IOException ex) {
+                
+            }
+        } catch (URISyntaxException ex) {
+            
+        }
+    }
+    
+    private void visitarSitioWeb(){
+        try {
+            try {
+                Desktop.getDesktop().browse(new URI("https://jangelmm.github.io/"));
+            } catch (IOException ex) {
+                System.out.println("Error 1");
+            }
+        } catch (URISyntaxException ex) {
+            System.out.println("Error 2");
+        }
+    }
+    
+    
+    @Override
+    public void caretUpdate(CaretEvent e) {
+        // Obtener la posición del cursor
+        int posicionCaret = e.getDot();
+        
+        // Obtener el JTextArea
+        JTextArea areaDeTexto = txtCuerpoDerContenidoNota;
+        
+        int numeroLinea = 1;
+        int numeroCaracter = 0;
+        
+        try {
+            // Obtener el numero de linea y el caracter en la linea
+            numeroLinea = areaDeTexto.getLineOfOffset(posicionCaret);
+            numeroCaracter = posicionCaret - areaDeTexto.getLineStartOffset(numeroLinea);
+        } catch (BadLocationException ex) {
+            ex.printStackTrace();
+        }
+        
+        // Contar el numero total de caracteres
+        int cantidadDeCaracteres = areaDeTexto.getText().length();
+
+        // Construir el texto a mostrar
+        String textoEstado = String.format("Línea: %d, Caracteres: %d", numeroLinea + 1, cantidadDeCaracteres);
+        
+        // Actualizar la etiqueta inferior de la vista
+        vista.setInformacionInferior(textoEstado);
+    }
+    
 }```
 
 ## `FlashNotes\src\main\java\com\mycompany\flashnotes\modelo\GestorNotas.java`
@@ -671,6 +739,7 @@ import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
 import javax.swing.border.Border;
+import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -787,15 +856,12 @@ public class VistaNotas extends javax.swing.JFrame implements VistaNotasInterfac
         
         // Configura el layout para que las notas se apilen verticalmente.
         panelCuerpoIzquierdo.setLayout(new javax.swing.BoxLayout(panelCuerpoIzquierdo, javax.swing.BoxLayout.Y_AXIS));
-        
-        opcTemaClaro.setActionCommand("Claro");
-        opcTemaOscuro.setActionCommand("Oscuro");
 
         // Configura los botones de radio para los temas, asegurando que solo uno pueda ser seleccionado.
         ButtonGroup temas = new ButtonGroup();
         temas.add(opcTemaClaro);
         temas.add(opcTemaOscuro);
-        opcTemaOscuro.setSelected(true);
+        opcTemaClaro.setSelected(true);
     }
     
     /**
@@ -842,6 +908,15 @@ public class VistaNotas extends javax.swing.JFrame implements VistaNotasInterfac
     @Override
     public void addCambiarTemaClaro(ActionListener l){
         opcTemaClaro.addActionListener(l);
+    }
+    
+    @Override
+    public void addVisitarDocumentacion(ActionListener l){
+        opcDocumentacion.addActionListener(l);
+    }
+    @Override
+    public void addVisitarSitioWeb(ActionListener l){
+        opcSitioWeb.addActionListener(l);
     }
     
     @Override
@@ -968,6 +1043,21 @@ public class VistaNotas extends javax.swing.JFrame implements VistaNotasInterfac
             JLabel label = (JLabel) panelCuerpoIzquierdo.getComponent(index);
             label.setText(getTituloNota(contenido));
         }
+    }
+    
+    @Override
+    public void actualizarConteoNotas(int cantidad){
+        lblEncabezadoNot.setText(cantidad + " notas act.");
+    }
+    
+    @Override
+    public void addCaretListener(CaretListener l) {
+        txtCuerpoDerContenidoNota.addCaretListener(l);
+    }
+    
+    @Override
+    public void setInformacionInferior(String texto) {
+        lblInferiorInformacion.setText(texto);
     }
     
     /**
@@ -1136,7 +1226,7 @@ public class VistaNotas extends javax.swing.JFrame implements VistaNotasInterfac
 
         menuAyuda.setText("Ayuda");
 
-        opcDocumentacion.setText("Documentación");
+        opcDocumentacion.setText("Documentacion");
         menuAyuda.add(opcDocumentacion);
 
         opcSitioWeb.setText("Donar");
@@ -1204,6 +1294,7 @@ package com.mycompany.flashnotes.vista;
 
 import java.awt.event.ActionListener;
 import java.util.List;
+import javax.swing.event.CaretListener;
 
 /**
  * La interfaz VistaNotasInterface define los métodos que el controlador puede
@@ -1237,6 +1328,8 @@ public interface VistaNotasInterface {
     void addBuscarListener(ActionListener listener);
     void addCambiarTemaOscuro(ActionListener listener);
     void addCambiarTemaClaro(ActionListener listener);
+    void addVisitarDocumentacion(ActionListener listener);
+    void addVisitarSitioWeb(ActionListener listener);
 
     // Métodos para obtener datos de la vista
     String getTextoBusqueda();
@@ -1248,6 +1341,9 @@ public interface VistaNotasInterface {
     void mostrarNotas(List<String> contenidos);
     void seleccionarNota(int index);
     void actualizarTituloNota(int index, String contenido);
+    void actualizarConteoNotas(int cantidad);
+    void addCaretListener(CaretListener listener);
+    void setInformacionInferior(String texto);
     
     // Método para hacer visible la ventana de la aplicación
     void setVisible(boolean visible);

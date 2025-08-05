@@ -2,13 +2,16 @@ package com.mycompany.flashnotes.vista;
 
 import java.awt.Color;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
+import javax.swing.JTextArea;
 import javax.swing.border.Border;
+import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -312,6 +315,41 @@ public class VistaNotas extends javax.swing.JFrame implements VistaNotasInterfac
             JLabel label = (JLabel) panelCuerpoIzquierdo.getComponent(index);
             label.setText(getTituloNota(contenido));
         }
+    }
+    
+    @Override
+    public void actualizarConteoNotas(int cantidad){
+        lblEncabezadoNot.setText(cantidad + " notas act.");
+    }
+    
+    @Override
+    public void addCaretListener(CaretListener l) {
+        txtCuerpoDerContenidoNota.addCaretListener(l);
+    }
+    
+    @Override
+    public void setInformacionInferior(String texto) {
+        lblInferiorInformacion.setText(texto);
+    }
+    
+    @Override
+    public void addBuscarKeyListener(KeyListener l) {
+        txtElementoBuscarNotaActual.addKeyListener(l);
+    }
+    
+    @Override
+    public String getTextoBuscar() {
+        return txtElementoBuscarNotaActual.getText();
+    }
+    
+    @Override
+    public void setCaretPosition(int position) {
+        txtCuerpoDerContenidoNota.setCaretPosition(position);
+    }
+
+    @Override
+    public JTextArea getTxtCuerpoDerContenidoNota() {
+        return txtCuerpoDerContenidoNota;
     }
     
     /**
