@@ -4,10 +4,6 @@ import com.mycompany.flashnotes.persistencia.NotaDAO;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- *
- * @author jesus
- */
 public class GestorNotas {
     private final List<Nota> notas;
     private final NotaDAO notaDAO;
@@ -41,8 +37,9 @@ public class GestorNotas {
 
     public List<Integer> buscar(String texto) {
         List<Integer> resultados = new ArrayList<>();
+        String textoLower = texto.toLowerCase();
         for (int i = 0; i < notas.size(); i++) {
-            if (notas.get(i).getContenido().contains(texto)) {
+            if (notas.get(i).getContenido().toLowerCase().contains(textoLower)) {
                 resultados.add(i);
             }
         }
@@ -52,10 +49,26 @@ public class GestorNotas {
     public List<Nota> getNotas() {
         return new ArrayList<>(notas);
     }
+    
+    // Método agregado para obtener una nota específica
+    public Nota getNota(int indice){
+        if (indice >= 0 && indice < notas.size()) {
+            return notas.get(indice);
+        }
+        return null;
+    }
 
     public List<String> getContenidoNotas() {
         List<String> contenidos = new ArrayList<>();
-        notas.forEach(n -> contenidos.add(n.getContenido()));
+        for (Nota nota : notas) {
+            contenidos.add(nota.getContenido());
+        }
         return contenidos;
     }
+    
+    public void actualizarContenidoNota(int indice, String contenido) {
+        if (indice >= 0 && indice < notas.size()) {
+            notas.get(indice).setContenido(contenido);
+        }
+    }   
 }

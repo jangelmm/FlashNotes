@@ -9,6 +9,8 @@ import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
 import javax.swing.border.Border;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 /**
  *
@@ -19,11 +21,39 @@ public class VistaNotas extends javax.swing.JFrame {
     private int notaSeleccionadaIndex = -1;
     private final Border defaultBorder = BorderFactory.createEmptyBorder(5, 5, 5, 5);
     private final Border selectedBorder = BorderFactory.createLineBorder(new Color(155, 182, 255), 2);
+    private final DocumentListener documentListener;
+    
+    // Listener para guardar cambios de texto
+    private GuardarCambiosListener guardarCambiosListener;
+    
+    // Listener para seleccionar una nota
+    private NotaSeleccionadaListener notaSeleccionadaListener;
+    
     /**
      * Creates new form VistaNotas
      */
     public VistaNotas() {
+        // Inicializa el DocumentListener una sola vez
+        documentListener = new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) { notificarCambios(); }
+            @Override
+            public void removeUpdate(DocumentEvent e) { notificarCambios(); }
+            @Override
+            public void changedUpdate(DocumentEvent e) { notificarCambios(); }
+            
+            private void notificarCambios() {
+                if (guardarCambiosListener != null && notaSeleccionadaIndex >= 0) {
+                    guardarCambiosListener.onGuardarCambios(txtCuerpoDerContenidoNota.getText());
+                }
+            }
+        };
+        
         initComponents();
+        setLocationRelativeTo(null);
+        // Agrega el listener inicial al JTextArea
+        txtCuerpoDerContenidoNota.getDocument().addDocumentListener(documentListener);
+        
         // Inicializa el panel izquierdo para que use un BoxLayout vertical
         panelCuerpoIzquierdo.setLayout(new javax.swing.BoxLayout(panelCuerpoIzquierdo, javax.swing.BoxLayout.Y_AXIS));
 
@@ -32,8 +62,25 @@ public class VistaNotas extends javax.swing.JFrame {
         temas.add(opcTemaClaro);
         temas.add(opcTemaOscuro);
         opcTemaOscuro.setSelected(true);
+        
     }
     
+    public interface NotaSeleccionadaListener {
+        void onNotaSeleccionada(int index);
+    }
+        
+    public void setNotaSeleccionadaListener(NotaSeleccionadaListener listener) {
+        this.notaSeleccionadaListener = listener;
+    }
+
+    public interface GuardarCambiosListener {
+        void onGuardarCambios(String contenido);
+    }
+        
+    public void setGuardarCambiosListener(GuardarCambiosListener listener) {
+        this.guardarCambiosListener = listener;
+    }
+        
     public void addCrearNotaListener(ActionListener l) {
         btnElementoNuevaNota.addActionListener(l);
         opcNuevaNota.addActionListener(l);
@@ -61,16 +108,42 @@ public class VistaNotas extends javax.swing.JFrame {
         return txtCuerpoDerContenidoNota.getText();
     }
 
+    // Este es el método corregido y completo que estabas pidiendo.
     public void setContenidoNota(String contenido) {
+        // Remueve el listener antes de cambiar el texto para evitar que se dispare
+        txtCuerpoDerContenidoNota.getDocument().removeDocumentListener(documentListener);
+        
+        // Cambia el texto del JTextArea
         txtCuerpoDerContenidoNota.setText(contenido);
+        
+        // Vuelve a agregar el listener
+        txtCuerpoDerContenidoNota.getDocument().addDocumentListener(documentListener);
     }
 
     public int getNotaSeleccionadaIndex() {
         return notaSeleccionadaIndex;
     }
+    
+    // Este método ahora es el que se encarga de cambiar la selección visual
+    public void seleccionarNota(int index) {
+        this.notaSeleccionadaIndex = index;
+        for (int i = 0; i < panelCuerpoIzquierdo.getComponentCount(); i++) {
+            JLabel label = (JLabel) panelCuerpoIzquierdo.getComponent(i);
+            label.setBorder(i == index ? selectedBorder : defaultBorder);
+        }
+    }
 
+    // El controlador ahora es responsable de llamar a este método para actualizar la vista
     public void mostrarNotas(List<String> contenidos) {
         panelCuerpoIzquierdo.removeAll();
+        panelCuerpoIzquierdo.revalidate();
+        panelCuerpoIzquierdo.repaint();
+
+        if (contenidos.isEmpty()) {
+            panelCuerpoIzquierdo.add(lblCuerpoIzquierdoNotasActivas);
+            return;
+        }
+        
         for (int i = 0; i < contenidos.size(); i++) {
             String contenido = contenidos.get(i);
             JLabel notaLabel = new JLabel(getTituloNota(contenido));
@@ -79,28 +152,21 @@ public class VistaNotas extends javax.swing.JFrame {
             notaLabel.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    JLabel source = (JLabel) e.getSource();
-                    int idx = (int) source.getClientProperty("index");
-                    seleccionarNota(idx);
+                    int idx = (int) ((JLabel) e.getSource()).getClientProperty("index");
+                    if (notaSeleccionadaListener != null) {
+                        notaSeleccionadaListener.onNotaSeleccionada(idx);
+                    }
                 }
             });
             panelCuerpoIzquierdo.add(notaLabel);
         }
+        
         panelCuerpoIzquierdo.revalidate();
         panelCuerpoIzquierdo.repaint();
     }
 
-    public void seleccionarNota(int index) {
-        this.notaSeleccionadaIndex = index;
-        for (int i = 0; i < panelCuerpoIzquierdo.getComponentCount(); i++) {
-            ((JLabel) panelCuerpoIzquierdo.getComponent(i)).setBorder(defaultBorder);
-        }
-        JLabel selected = (JLabel) panelCuerpoIzquierdo.getComponent(index);
-        selected.setBorder(selectedBorder);
-    }
-
     private String getTituloNota(String contenido) {
-        if (contenido == null || contenido.isBlank()) {
+        if (contenido == null || contenido.trim().isEmpty()) {
             return "Nueva Nota";
         }
         String[] palabras = contenido.trim().split("\\s+");
@@ -109,6 +175,13 @@ public class VistaNotas extends javax.swing.JFrame {
             titulo.append(palabras[i]).append(" ");
         }
         return titulo.toString().trim();
+    }
+
+    public void actualizarTituloNota(int index, String contenido) {
+        if (index >= 0 && index < panelCuerpoIzquierdo.getComponentCount()) {
+            JLabel label = (JLabel) panelCuerpoIzquierdo.getComponent(index);
+            label.setText(getTituloNota(contenido));
+        }
     }
     
     /**
@@ -162,7 +235,7 @@ public class VistaNotas extends javax.swing.JFrame {
         panelSuperior.setMaximumSize(new java.awt.Dimension(32767, 50));
         panelSuperior.setPreferredSize(new java.awt.Dimension(400, 50));
 
-        lblEncabezadoImg.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/destello.png"))); // NOI18N
+        lblEncabezadoImg.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/mycompany/flashnotes/imagenes/destello.png"))); // NOI18N
         panelSuperior.add(lblEncabezadoImg);
 
         lblEncabezadoTxt.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
@@ -177,19 +250,19 @@ public class VistaNotas extends javax.swing.JFrame {
         panelElementos.setMaximumSize(new java.awt.Dimension(32767, 50));
         panelElementos.setPreferredSize(new java.awt.Dimension(400, 50));
 
-        btnElementoNuevaNota.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/nuevo.png"))); // NOI18N
+        btnElementoNuevaNota.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/mycompany/flashnotes/imagenes/nuevo.png"))); // NOI18N
         btnElementoNuevaNota.setText("Nueva Nota");
         panelElementos.add(btnElementoNuevaNota);
 
-        btnElementoGuardarTxt.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/guardar.png"))); // NOI18N
+        btnElementoGuardarTxt.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/mycompany/flashnotes/imagenes/guardar.png"))); // NOI18N
         btnElementoGuardarTxt.setText("Guardar TXT");
         panelElementos.add(btnElementoGuardarTxt);
 
-        btnElementoLimpiarTodo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/borrar.png"))); // NOI18N
+        btnElementoLimpiarTodo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/mycompany/flashnotes/imagenes/borrar.png"))); // NOI18N
         btnElementoLimpiarTodo.setText("Limpiar Todo");
         panelElementos.add(btnElementoLimpiarTodo);
 
-        lblElementoIconoBuscar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/buscar.png"))); // NOI18N
+        lblElementoIconoBuscar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/mycompany/flashnotes/imagenes/buscar.png"))); // NOI18N
         panelElementos.add(lblElementoIconoBuscar);
 
         txtElementoBuscarNotaActual.setToolTipText("");
@@ -244,7 +317,7 @@ public class VistaNotas extends javax.swing.JFrame {
 
         lblInferiorAdvertencia.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         lblInferiorAdvertencia.setForeground(new java.awt.Color(255, 204, 51));
-        lblInferiorAdvertencia.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/advertencia.png"))); // NOI18N
+        lblInferiorAdvertencia.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/mycompany/flashnotes/imagenes/advertencia.png"))); // NOI18N
         lblInferiorAdvertencia.setText("Notas temporales - Se eliminarán al cerrar");
         panelInferior.add(lblInferiorAdvertencia);
 
@@ -300,41 +373,6 @@ public class VistaNotas extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(VistaNotas.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(VistaNotas.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(VistaNotas.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(VistaNotas.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new VistaNotas().setVisible(true);
-            }
-        });
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnElementoGuardarTxt;

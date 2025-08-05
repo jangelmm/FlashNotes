@@ -6,70 +6,83 @@ FlashNotes
 │   ├── src
 │   │   ├── main
 │   │   │   └── java
-│   │   │       ├── com
-│   │   │       │   └── mycompany
-│   │   │       │       └── flashnotes
-│   │   │       │           ├── control
-│   │   │       │           │   └── ControladorNotas.java
-│   │   │       │           ├── modelo
-│   │   │       │           │   ├── GestorNotas.java
-│   │   │       │           │   └── Nota.java
-│   │   │       │           ├── persistencia
-│   │   │       │           │   └── NotaDAO.java
-│   │   │       │           ├── vista
-│   │   │       │           │   ├── VistaNotas.form
-│   │   │       │           │   └── VistaNotas.java
-│   │   │       │           └── FlashNotes.java
-│   │   │       └── imagenes
-│   │   │           ├── advertencia.png
-│   │   │           ├── borrar.png
-│   │   │           ├── buscar.png
-│   │   │           ├── destello.png
-│   │   │           ├── guardar.png
-│   │   │           └── nuevo.png
+│   │   │       └── com
+│   │   │           └── mycompany
+│   │   │               └── flashnotes
+│   │   │                   ├── control
+│   │   │                   │   └── ControladorNotas.java
+│   │   │                   ├── imagenes
+│   │   │                   │   ├── advertencia.png
+│   │   │                   │   ├── borrar.png
+│   │   │                   │   ├── buscar.png
+│   │   │                   │   ├── destello.png
+│   │   │                   │   ├── guardar.png
+│   │   │                   │   └── nuevo.png
+│   │   │                   ├── modelo
+│   │   │                   │   ├── GestorNotas.java
+│   │   │                   │   └── Nota.java
+│   │   │                   ├── persistencia
+│   │   │                   │   └── NotaDAO.java
+│   │   │                   ├── vista
+│   │   │                   │   ├── VistaNotas.form
+│   │   │                   │   └── VistaNotas.java
+│   │   │                   └── FlashNotes.java
 │   │   └── test
 │   │       └── java
 │   ├── target
 │   │   ├── classes
-│   │   │   ├── com
-│   │   │   │   └── mycompany
-│   │   │   │       └── flashnotes
-│   │   │   │           ├── control
-│   │   │   │           │   └── ControladorNotas.class
-│   │   │   │           ├── modelo
-│   │   │   │           │   ├── GestorNotas.class
-│   │   │   │           │   └── Nota.class
-│   │   │   │           ├── persistencia
-│   │   │   │           │   └── NotaDAO.class
-│   │   │   │           ├── vista
-│   │   │   │           │   ├── VistaNotas$1.class
-│   │   │   │           │   ├── VistaNotas$2.class
-│   │   │   │           │   ├── VistaNotas.class
-│   │   │   │           │   └── VistaNotas.form
-│   │   │   │           └── FlashNotes.class
-│   │   │   └── imagenes
-│   │   │       ├── advertencia.png
-│   │   │       ├── borrar.png
-│   │   │       ├── buscar.png
-│   │   │       ├── destello.png
-│   │   │       ├── guardar.png
-│   │   │       └── nuevo.png
+│   │   │   └── com
+│   │   │       └── mycompany
+│   │   │           └── flashnotes
+│   │   │               ├── control
+│   │   │               │   └── ControladorNotas.class
+│   │   │               ├── imagenes
+│   │   │               │   ├── advertencia.png
+│   │   │               │   ├── borrar.png
+│   │   │               │   ├── buscar.png
+│   │   │               │   ├── destello.png
+│   │   │               │   ├── guardar.png
+│   │   │               │   └── nuevo.png
+│   │   │               ├── modelo
+│   │   │               │   ├── GestorNotas.class
+│   │   │               │   └── Nota.class
+│   │   │               ├── persistencia
+│   │   │               │   └── NotaDAO.class
+│   │   │               ├── vista
+│   │   │               │   ├── VistaNotas$1.class
+│   │   │               │   ├── VistaNotas$2.class
+│   │   │               │   ├── VistaNotas$3.class
+│   │   │               │   ├── VistaNotas$GuardarCambiosListener.class
+│   │   │               │   ├── VistaNotas$NotaSeleccionadaListener.class
+│   │   │               │   ├── VistaNotas.class
+│   │   │               │   └── VistaNotas.form
+│   │   │               └── FlashNotes.class
 │   │   ├── generated-sources
 │   │   │   └── annotations
+│   │   ├── generated-test-sources
+│   │   │   └── test-annotations
+│   │   ├── maven-archiver
+│   │   │   └── pom.properties
 │   │   ├── maven-status
 │   │   │   └── maven-compiler-plugin
-│   │   │       └── compile
-│   │   │           └── default-compile
+│   │   │       ├── compile
+│   │   │       │   └── default-compile
+│   │   │       │       ├── createdFiles.lst
+│   │   │       │       └── inputFiles.lst
+│   │   │       └── testCompile
+│   │   │           └── default-testCompile
 │   │   │               ├── createdFiles.lst
 │   │   │               └── inputFiles.lst
-│   │   └── test-classes
+│   │   ├── test-classes
+│   │   └── FlashNotes-1.0-SNAPSHOT.jar
 │   ├── notas.txt
 │   ├── pom.xml
 │   └── script.py
 ├── Images
 │   └── Fase-2-Diseno-GUI-PlantUML.png
 ├── .gitignore
-└── README.md
+├── README.md
+└── project_overview.md
 ```
 
 ## `.gitignore`
@@ -87,18 +100,17 @@ import com.mycompany.flashnotes.control.ControladorNotas;
 import com.mycompany.flashnotes.modelo.GestorNotas;
 import com.mycompany.flashnotes.vista.VistaNotas;
 
-
-/**
- *
- * @author jesus
- */
-
 public class FlashNotes {
     public static void main(String[] args) {
         java.awt.EventQueue.invokeLater(() -> {
             VistaNotas vista = new VistaNotas();
             GestorNotas gestor = new GestorNotas();
-            new ControladorNotas(gestor, vista);
+            ControladorNotas controlador = new ControladorNotas(gestor, vista);
+            
+            // Configurar listeners adicionales
+            vista.setNotaSeleccionadaListener(controlador::cambiarNotaSeleccionada);
+            vista.setGuardarCambiosListener(controlador::guardarCambiosNotaActual);
+            
             vista.setVisible(true);
         });
     }
@@ -109,18 +121,14 @@ public class FlashNotes {
 ```java
 package com.mycompany.flashnotes.control;
 
-
 import com.mycompany.flashnotes.modelo.GestorNotas;
+import com.mycompany.flashnotes.modelo.Nota;
 import com.mycompany.flashnotes.vista.VistaNotas;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 
-/**
- *
- * @author jesus
- */
 public class ControladorNotas {
     private final GestorNotas gestor;
     private final VistaNotas vista;
@@ -140,24 +148,30 @@ public class ControladorNotas {
         actualizarVista();
     }
 
-    private void crearNota() {
-        gestor.crearNota("");
-        actualizarVista();
-    }
-
     private void guardarNota() {
         int idx = vista.getNotaSeleccionadaIndex();
-        JFileChooser chooser = new JFileChooser();
-        if (chooser.showSaveDialog(vista) == JFileChooser.APPROVE_OPTION) {
-            String ruta = chooser.getSelectedFile().getAbsolutePath();
-            gestor.guardarNota(idx, ruta);
+        if (idx >= 0) {
+            JFileChooser chooser = new JFileChooser();
+            if (chooser.showSaveDialog(vista) == JFileChooser.APPROVE_OPTION) {
+                String ruta = chooser.getSelectedFile().getAbsolutePath();
+                gestor.guardarNota(idx, ruta);
+            }
+        } else {
+            JOptionPane.showMessageDialog(vista, "Selecciona una nota para guardar.", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void limpiarTodas() {
-        gestor.eliminarTodas();
-        vista.setContenidoNota("");
-        actualizarVista();
+        int confirm = JOptionPane.showConfirmDialog(vista, 
+                "¿Eliminar todas las notas? Esta acción no se puede deshacer",
+                "Confirmar eliminación",
+                JOptionPane.YES_NO_OPTION);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            gestor.eliminarTodas();
+            vista.setContenidoNota("");
+            actualizarVista();
+        }
     }
 
     private void buscarNota() {
@@ -168,15 +182,49 @@ public class ControladorNotas {
             vista.mostrarNotas(gestor.getContenidoNotas());
             vista.seleccionarNota(primero);
             vista.setContenidoNota(gestor.getNotas().get(primero).getContenido());
+        } else {
+            JOptionPane.showMessageDialog(vista, "No se encontraron coincidencias.", "Búsqueda", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
     private void actualizarVista() {
         vista.mostrarNotas(gestor.getContenidoNotas());
     }
-}
 
-```
+    public void cambiarNotaSeleccionada(int indice) {
+        if (indice >= 0 && indice < gestor.getNotas().size()) {
+            if (vista.getNotaSeleccionadaIndex() >= 0) {
+                guardarCambiosNotaActual(vista.getContenidoNota());
+            }
+            Nota nota = gestor.getNotas().get(indice);
+            vista.setContenidoNota(nota.getContenido());
+            vista.seleccionarNota(indice);
+            actualizarVista();
+        }
+    }
+
+    public void crearNota() {
+        if (vista.getNotaSeleccionadaIndex() >= 0) {
+            guardarCambiosNotaActual(vista.getContenidoNota());
+        }
+        gestor.crearNota(""); // Crear nueva nota vacía
+        actualizarVista();
+        int nuevaNotaIndex = gestor.getNotas().size() - 1;
+        vista.seleccionarNota(nuevaNotaIndex);
+        vista.setContenidoNota(""); // Limpiar el área de texto
+    }
+    
+    public void guardarCambiosNotaActual(String contenido) {
+        int indice = vista.getNotaSeleccionadaIndex();
+        if (indice >= 0 && indice < gestor.getNotas().size()) {
+            System.out.println("Guardando nota " + indice + " con contenido: " + contenido);
+            gestor.actualizarContenidoNota(indice, contenido);
+            actualizarVista();
+        } else {
+            System.out.println("Índice inválido para guardar: " + indice);
+        }
+    }
+}```
 
 ## `FlashNotes\src\main\java\com\mycompany\flashnotes\modelo\GestorNotas.java`
 
@@ -187,10 +235,6 @@ import com.mycompany.flashnotes.persistencia.NotaDAO;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- *
- * @author jesus
- */
 public class GestorNotas {
     private final List<Nota> notas;
     private final NotaDAO notaDAO;
@@ -224,8 +268,9 @@ public class GestorNotas {
 
     public List<Integer> buscar(String texto) {
         List<Integer> resultados = new ArrayList<>();
+        String textoLower = texto.toLowerCase();
         for (int i = 0; i < notas.size(); i++) {
-            if (notas.get(i).getContenido().contains(texto)) {
+            if (notas.get(i).getContenido().toLowerCase().contains(textoLower)) {
                 resultados.add(i);
             }
         }
@@ -238,11 +283,18 @@ public class GestorNotas {
 
     public List<String> getContenidoNotas() {
         List<String> contenidos = new ArrayList<>();
-        notas.forEach(n -> contenidos.add(n.getContenido()));
+        for (Nota nota : notas) {
+            contenidos.add(nota.getContenido());
+        }
         return contenidos;
     }
-}
-```
+    
+    public void actualizarContenidoNota(int indice, String contenido) {
+        if (indice >= 0 && indice < notas.size()) {
+            notas.get(indice).setContenido(contenido);
+        }
+    }   
+}```
 
 ## `FlashNotes\src\main\java\com\mycompany\flashnotes\modelo\Nota.java`
 
@@ -334,6 +386,8 @@ import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
 import javax.swing.border.Border;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 /**
  *
@@ -348,7 +402,10 @@ public class VistaNotas extends javax.swing.JFrame {
      * Creates new form VistaNotas
      */
     public VistaNotas() {
+        
         initComponents();
+        setLocationRelativeTo(null);
+        
         // Inicializa el panel izquierdo para que use un BoxLayout vertical
         panelCuerpoIzquierdo.setLayout(new javax.swing.BoxLayout(panelCuerpoIzquierdo, javax.swing.BoxLayout.Y_AXIS));
 
@@ -357,8 +414,45 @@ public class VistaNotas extends javax.swing.JFrame {
         temas.add(opcTemaClaro);
         temas.add(opcTemaOscuro);
         opcTemaOscuro.setSelected(true);
+        
+        // Agregar listener para cambios en el texto
+        txtCuerpoDerContenidoNota.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) { notificarCambios(); }
+            @Override
+            public void removeUpdate(DocumentEvent e) { notificarCambios(); }
+            @Override
+            public void changedUpdate(DocumentEvent e) { notificarCambios(); }
+            
+            private void notificarCambios() {
+                if (guardarCambiosListener != null && notaSeleccionadaIndex >= 0) {
+                    guardarCambiosListener.onGuardarCambios(txtCuerpoDerContenidoNota.getText());
+                    actualizarTituloNota(notaSeleccionadaIndex);
+                }
+            }
+        });
     }
     
+    public interface NotaSeleccionadaListener {
+        void onNotaSeleccionada(int index);
+    }
+    
+    private NotaSeleccionadaListener notaSeleccionadaListener;
+    
+    public void setNotaSeleccionadaListener(NotaSeleccionadaListener listener) {
+        this.notaSeleccionadaListener = listener;
+    }
+
+    public interface GuardarCambiosListener {
+        void onGuardarCambios(String contenido);
+    }
+    
+    private GuardarCambiosListener guardarCambiosListener;
+    
+    public void setGuardarCambiosListener(GuardarCambiosListener listener) {
+        this.guardarCambiosListener = listener;
+    }
+        
     public void addCrearNotaListener(ActionListener l) {
         btnElementoNuevaNota.addActionListener(l);
         opcNuevaNota.addActionListener(l);
@@ -404,9 +498,10 @@ public class VistaNotas extends javax.swing.JFrame {
             notaLabel.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    JLabel source = (JLabel) e.getSource();
-                    int idx = (int) source.getClientProperty("index");
-                    seleccionarNota(idx);
+                    int idx = (int) ((JLabel) e.getSource()).getClientProperty("index");
+                    if (notaSeleccionadaListener != null) {
+                        notaSeleccionadaListener.onNotaSeleccionada(idx);
+                    }
                 }
             });
             panelCuerpoIzquierdo.add(notaLabel);
@@ -415,17 +510,19 @@ public class VistaNotas extends javax.swing.JFrame {
         panelCuerpoIzquierdo.repaint();
     }
 
-    private void seleccionarNota(int index) {
+    public void seleccionarNota(int index) {
         this.notaSeleccionadaIndex = index;
         for (int i = 0; i < panelCuerpoIzquierdo.getComponentCount(); i++) {
-            ((JLabel) panelCuerpoIzquierdo.getComponent(i)).setBorder(defaultBorder);
+            JLabel label = (JLabel) panelCuerpoIzquierdo.getComponent(i);
+            label.setBorder(i == index ? selectedBorder : defaultBorder);
         }
-        JLabel selected = (JLabel) panelCuerpoIzquierdo.getComponent(index);
-        selected.setBorder(selectedBorder);
+        if (notaSeleccionadaListener != null) {
+            notaSeleccionadaListener.onNotaSeleccionada(index);
+        }
     }
 
     private String getTituloNota(String contenido) {
-        if (contenido == null || contenido.isBlank()) {
+        if (contenido == null || contenido.trim().isEmpty()) {
             return "Nueva Nota";
         }
         String[] palabras = contenido.trim().split("\\s+");
@@ -434,6 +531,19 @@ public class VistaNotas extends javax.swing.JFrame {
             titulo.append(palabras[i]).append(" ");
         }
         return titulo.toString().trim();
+    }
+    
+    private void guardarCambiosNotaActual() {
+        if (notaSeleccionadaIndex >= 0 && guardarCambiosListener != null) {
+            guardarCambiosListener.onGuardarCambios(txtCuerpoDerContenidoNota.getText());
+        }
+    }
+    
+    private void actualizarTituloNota(int index) {
+        if (index >= 0 && index < panelCuerpoIzquierdo.getComponentCount()) {
+            JLabel label = (JLabel) panelCuerpoIzquierdo.getComponent(index);
+            label.setText(getTituloNota(txtCuerpoDerContenidoNota.getText()));
+        }
     }
     
     /**
@@ -487,7 +597,7 @@ public class VistaNotas extends javax.swing.JFrame {
         panelSuperior.setMaximumSize(new java.awt.Dimension(32767, 50));
         panelSuperior.setPreferredSize(new java.awt.Dimension(400, 50));
 
-        lblEncabezadoImg.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/destello.png"))); // NOI18N
+        lblEncabezadoImg.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/mycompany/flashnotes/imagenes/destello.png"))); // NOI18N
         panelSuperior.add(lblEncabezadoImg);
 
         lblEncabezadoTxt.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
@@ -502,19 +612,19 @@ public class VistaNotas extends javax.swing.JFrame {
         panelElementos.setMaximumSize(new java.awt.Dimension(32767, 50));
         panelElementos.setPreferredSize(new java.awt.Dimension(400, 50));
 
-        btnElementoNuevaNota.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/nuevo.png"))); // NOI18N
+        btnElementoNuevaNota.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/mycompany/flashnotes/imagenes/nuevo.png"))); // NOI18N
         btnElementoNuevaNota.setText("Nueva Nota");
         panelElementos.add(btnElementoNuevaNota);
 
-        btnElementoGuardarTxt.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/guardar.png"))); // NOI18N
+        btnElementoGuardarTxt.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/mycompany/flashnotes/imagenes/guardar.png"))); // NOI18N
         btnElementoGuardarTxt.setText("Guardar TXT");
         panelElementos.add(btnElementoGuardarTxt);
 
-        btnElementoLimpiarTodo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/borrar.png"))); // NOI18N
+        btnElementoLimpiarTodo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/mycompany/flashnotes/imagenes/borrar.png"))); // NOI18N
         btnElementoLimpiarTodo.setText("Limpiar Todo");
         panelElementos.add(btnElementoLimpiarTodo);
 
-        lblElementoIconoBuscar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/buscar.png"))); // NOI18N
+        lblElementoIconoBuscar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/mycompany/flashnotes/imagenes/buscar.png"))); // NOI18N
         panelElementos.add(lblElementoIconoBuscar);
 
         txtElementoBuscarNotaActual.setToolTipText("");
@@ -569,7 +679,7 @@ public class VistaNotas extends javax.swing.JFrame {
 
         lblInferiorAdvertencia.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         lblInferiorAdvertencia.setForeground(new java.awt.Color(255, 204, 51));
-        lblInferiorAdvertencia.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/advertencia.png"))); // NOI18N
+        lblInferiorAdvertencia.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/mycompany/flashnotes/imagenes/advertencia.png"))); // NOI18N
         lblInferiorAdvertencia.setText("Notas temporales - Se eliminarán al cerrar");
         panelInferior.add(lblInferiorAdvertencia);
 
