@@ -125,12 +125,12 @@ public class VistaNotas extends javax.swing.JFrame implements VistaNotasInterfac
         
         // Configura el layout para que las notas se apilen verticalmente.
         panelCuerpoIzquierdo.setLayout(new javax.swing.BoxLayout(panelCuerpoIzquierdo, javax.swing.BoxLayout.Y_AXIS));
-        
+
         // Configura los botones de radio para los temas, asegurando que solo uno pueda ser seleccionado.
         ButtonGroup temas = new ButtonGroup();
         temas.add(opcTemaClaro);
         temas.add(opcTemaOscuro);
-        opcTemaOscuro.setSelected(true);
+        opcTemaClaro.setSelected(true);
     }
     
     /**
@@ -169,6 +169,25 @@ public class VistaNotas extends javax.swing.JFrame implements VistaNotasInterfac
         opcGuardarElemento.addActionListener(l);
     }
 
+    @Override
+    public void addCambiarTemaOscuro(ActionListener l){
+        opcTemaOscuro.addActionListener(l);
+    }
+    
+    @Override
+    public void addCambiarTemaClaro(ActionListener l){
+        opcTemaClaro.addActionListener(l);
+    }
+    
+    @Override
+    public void addVisitarDocumentacion(ActionListener l){
+        opcDocumentacion.addActionListener(l);
+    }
+    @Override
+    public void addVisitarSitioWeb(ActionListener l){
+        opcSitioWeb.addActionListener(l);
+    }
+    
     @Override
     public void addLimpiarTodoListener(ActionListener l) {
         btnElementoLimpiarTodo.addActionListener(l);
@@ -461,7 +480,7 @@ public class VistaNotas extends javax.swing.JFrame implements VistaNotasInterfac
 
         menuAyuda.setText("Ayuda");
 
-        opcDocumentacion.setText("Documentación");
+        opcDocumentacion.setText("Documentacion");
         menuAyuda.add(opcDocumentacion);
 
         opcSitioWeb.setText("Donar");

@@ -25,7 +25,8 @@ FlashNotes
 │   │   │                   │   └── NotaDAO.java
 │   │   │                   ├── vista
 │   │   │                   │   ├── VistaNotas.form
-│   │   │                   │   └── VistaNotas.java
+│   │   │                   │   ├── VistaNotas.java
+│   │   │                   │   └── VistaNotasInterface.java
 │   │   │                   └── FlashNotes.java
 │   │   └── test
 │   │       └── java
@@ -51,10 +52,11 @@ FlashNotes
 │   │   │               ├── vista
 │   │   │               │   ├── VistaNotas$1.class
 │   │   │               │   ├── VistaNotas$2.class
-│   │   │               │   ├── VistaNotas$GuardarCambiosListener.class
-│   │   │               │   ├── VistaNotas$NotaSeleccionadaListener.class
 │   │   │               │   ├── VistaNotas.class
-│   │   │               │   └── VistaNotas.form
+│   │   │               │   ├── VistaNotas.form
+│   │   │               │   ├── VistaNotasInterface$GuardarCambiosListener.class
+│   │   │               │   ├── VistaNotasInterface$NotaSeleccionadaListener.class
+│   │   │               │   └── VistaNotasInterface.class
 │   │   │               └── FlashNotes.class
 │   │   ├── generated-sources
 │   │   │   └── annotations
@@ -100,12 +102,40 @@ import com.mycompany.flashnotes.control.ControladorNotas;
 import com.mycompany.flashnotes.modelo.GestorNotas;
 import com.mycompany.flashnotes.vista.VistaNotas;
 
+/**
+ * La clase principal de la aplicación FlashNotes.
+ *
+ * Su única responsabilidad es inicializar y arrancar la aplicación,
+ * creando las instancias del Modelo, la Vista y el Controlador y
+ * conectándolos entre sí.
+ *
+ * @author jesus
+ */
 public class FlashNotes {
+    
+    /**
+     * El punto de entrada principal de la aplicación.
+     *
+     * @param args Argumentos de la línea de comandos (no utilizados en esta aplicación).
+     */
     public static void main(String[] args) {
+        // Asegura que la interfaz gráfica de usuario (GUI) se ejecute en el hilo
+        // de despacho de eventos de AWT (AWT-EventQueue), que es la forma segura
+        // y recomendada de trabajar con Swing para evitar problemas de concurrencia.
         java.awt.EventQueue.invokeLater(() -> {
+            // 1. Instancia la Vista.
+            // La vista se crea sin conocer el modelo o el controlador.
             VistaNotas vista = new VistaNotas();
+            
+            // 2. Instancia el Modelo.
+            // El modelo se crea sin conocer la vista o el controlador.
             GestorNotas gestor = new GestorNotas();
+            
+            // 3. Instancia el Controlador, inyectando las dependencias del modelo y la vista.
+            // El controlador es el que conoce y une al modelo y la vista.
             ControladorNotas controlador = new ControladorNotas(gestor, vista);
+            
+            // 4. Hace visible la ventana de la aplicación.
             vista.setVisible(true);
         });
     }
@@ -123,40 +153,76 @@ import java.awt.event.ActionListener;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.FlatDarkLaf;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
+/**
+ * La clase ControladorNotas es el "Controlador" en el patrón de diseño MVC.
+ * Actúa como el intermediario principal entre el modelo (GestorNotas) y la vista (VistaNotas).
+ *
+ * Sus responsabilidades son:
+ * 1. Escuchar las acciones del usuario desde la vista.
+ * 2. Interpretar estas acciones y manipular el modelo de acuerdo a ellas.
+ * 3. Actualizar la vista para reflejar los cambios en el modelo.
+ *
+ * @author jesus
+ */
 public class ControladorNotas implements ActionListener {
+    
+    // Una referencia al modelo para acceder a la lógica de negocio.
     private final GestorNotas gestor;
+    
+    // Una referencia a la vista para manipular la interfaz de usuario.
     private final VistaNotas vista;
 
+    /**
+     * Constructor del controlador.
+     *
+     * @param gestor Una instancia de GestorNotas.
+     * @param vista Una instancia de VistaNotas.
+     */
     public ControladorNotas(GestorNotas gestor, VistaNotas vista) {
         this.gestor = gestor;
         this.vista = vista;
         initController();
     }
 
+    /**
+     * Inicializa el controlador, configurando los listeners para los eventos de la vista.
+     */
     private void initController() {
+        // Asigna este controlador como el ActionListener para varios botones y menús.
         vista.addCrearNotaListener(this);
         vista.addGuardarNotaListener(this);
         vista.addLimpiarTodoListener(this);
         vista.addBuscarListener(this);
         
-        // Listener para la selección de notas
+        // Asigna métodos específicos a las interfaces de listener de la vista
+        // usando expresiones lambda, lo que es una práctica moderna y limpia.
         vista.setNotaSeleccionadaListener(this::cambiarNotaSeleccionada);
-        // Listener para guardar cambios de texto
         vista.setGuardarCambiosListener(this::guardarCambiosNotaActual);
 
-        // Si no hay notas, crea una por defecto
+        // Si la aplicación se inicia sin notas, crea una nota vacía por defecto.
         if (gestor.getNotas().isEmpty()) {
             gestor.crearNota("");
         }
         
+        // Carga la interfaz de usuario inicial con los datos del modelo.
         actualizarVistaCompleta();
     }
     
-    // Método que se activa al hacer clic en los botones
+    /**
+     * Este método se activa cuando se hace clic en un botón o ítem de menú.
+     *
+     * @param e El evento de acción que contiene el comando del componente.
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         String comando = e.getActionCommand();
+        // Usa una estructura switch para manejar los diferentes comandos de acción.
         switch (comando) {
             case "Nueva Nota":
                 crearNuevaNota();
@@ -167,10 +233,21 @@ public class ControladorNotas implements ActionListener {
             case "Limpiar Todo":
                 limpiarTodas();
                 break;
+            case "Oscuro":
+                cambiarTemaOscuro();
+                break;
+            case "Claro":
+                cambiarTemaClaro();
+                break;
         }
     }
     
-    // Maneja la creación de una nueva nota
+    /**
+     * Lógica para crear una nueva nota.
+     * 1. Pide al modelo que cree una nueva nota.
+     * 2. Pide a la vista que se actualice.
+     * 3. Selecciona visualmente la nueva nota y muestra su contenido vacío.
+     */
     private void crearNuevaNota() {
         gestor.crearNota("");
         actualizarVistaCompleta();
@@ -178,7 +255,13 @@ public class ControladorNotas implements ActionListener {
         vista.setContenidoNota("");
     }
 
-    // Maneja la acción de guardar un archivo
+    /**
+     * Lógica para guardar la nota seleccionada en un archivo.
+     * 1. Obtiene el índice de la nota seleccionada desde la vista.
+     * 2. Usa JFileChooser para que el usuario elija la ubicación y el nombre del archivo.
+     * 3. Llama al método del modelo para guardar la nota.
+     * 4. Muestra mensajes de éxito o error al usuario.
+     */
     private void guardarNota() {
         int indice = vista.getNotaSeleccionadaIndex();
         if (indice < 0) {
@@ -206,7 +289,13 @@ public class ControladorNotas implements ActionListener {
         }
     }
     
-    // Maneja la eliminación de todas las notas
+    /**
+     * Lógica para eliminar todas las notas.
+     * 1. Pide confirmación al usuario para evitar la eliminación accidental.
+     * 2. Si el usuario confirma, le pide al modelo que elimine todas las notas.
+     * 3. Crea una nota vacía por defecto.
+     * 4. Actualiza la vista para reflejar el nuevo estado del modelo.
+     */
     private void limpiarTodas() {
         int confirm = JOptionPane.showConfirmDialog(vista, 
                 "¿Eliminar todas las notas? Esta acción no se puede deshacer",
@@ -221,7 +310,12 @@ public class ControladorNotas implements ActionListener {
         }
     }
     
-    // Método para manejar el clic en los labels de la lista de notas
+    /**
+     * Maneja el cambio de selección de notas en la vista.
+     * Este método es llamado por el listener de selección de la vista.
+     *
+     * @param indice El índice de la nueva nota seleccionada.
+     */
     private void cambiarNotaSeleccionada(int indice) {
         if(indice >= 0 && indice < gestor.getNotas().size()){
             vista.setContenidoNota(gestor.getNota(indice).getContenido());
@@ -229,7 +323,12 @@ public class ControladorNotas implements ActionListener {
         }
     }
     
-    // Método para guardar los cambios de la nota actual
+    /**
+     * Maneja el guardado automático de los cambios en el contenido de la nota actual.
+     * Este método es llamado por el DocumentListener de la vista.
+     *
+     * @param contenido El nuevo contenido de la nota.
+     */
     private void guardarCambiosNotaActual(String contenido) {
         int indice = vista.getNotaSeleccionadaIndex();
         if (indice >= 0 && indice < gestor.getNotas().size()) {
@@ -238,15 +337,47 @@ public class ControladorNotas implements ActionListener {
         }
     }
 
-    // Este método centraliza la actualización de la vista desde el modelo
+    /**
+     * Centraliza la lógica de actualización de la interfaz de usuario.
+     * Este método se encarga de sincronizar la vista con el estado actual del modelo.
+     */
     private void actualizarVistaCompleta() {
+        // Muestra todas las notas en el panel izquierdo de la vista.
         vista.mostrarNotas(gestor.getContenidoNotas());
+        
+        // Si hay notas, selecciona la primera y muestra su contenido.
         if (!gestor.getNotas().isEmpty()) {
             vista.setContenidoNota(gestor.getNota(0).getContenido());
             vista.seleccionarNota(0);
         } else {
+            // Si no hay notas, limpia el área de texto y la selección.
             vista.setContenidoNota("");
             vista.seleccionarNota(-1);
+        }
+    }
+    
+    private void cambiarTemaOscuro(){
+        try {
+            UIManager.setLookAndFeel(new FlatDarkLaf()); // Usa FlatDarkLaf para el tema oscuro
+            SwingUtilities.updateComponentTreeUI(vista);
+            vista.invalidate();
+            vista.validate();
+            vista.repaint();
+
+        } catch (UnsupportedLookAndFeelException e) {
+            e.printStackTrace();
+        }
+    }
+    private void cambiarTemaClaro(){
+        try {
+            UIManager.setLookAndFeel(new FlatLightLaf()); // Usa FlatLightLaf para el tema claro
+            SwingUtilities.updateComponentTreeUI(vista);
+            vista.invalidate();
+            vista.validate();
+            vista.repaint();
+
+        } catch (UnsupportedLookAndFeelException e) {
+            e.printStackTrace();
         }
     }
 }```
@@ -260,29 +391,68 @@ import com.mycompany.flashnotes.persistencia.NotaDAO;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * La clase GestorNotas es el corazón del modelo de la aplicación.
+ * Es responsable de la lógica de negocio relacionada con la gestión de notas,
+ * como crear, eliminar, guardar, buscar y acceder a las notas.
+ *
+ * Utiliza una instancia de NotaDAO para delegar las operaciones de
+ * persistencia (guardar y cargar en archivos), manteniendo la separación de responsabilidades.
+ *
+ * @author jesus
+ */
 public class GestorNotas {
+    
+    // Una lista para almacenar los objetos Nota en memoria.
     private final List<Nota> notas;
+    
+    // Una instancia de NotaDAO para manejar las operaciones de archivo.
     private final NotaDAO notaDAO;
 
+    /**
+     * Constructor de la clase GestorNotas.
+     * Inicializa la lista de notas y la instancia de NotaDAO.
+     */
     public GestorNotas() {
         this.notas = new ArrayList<>();
         this.notaDAO = new NotaDAO();
     }
 
+    /**
+     * Crea una nueva nota con el contenido especificado y la añade a la lista.
+     *
+     * @param contenido El texto inicial para la nueva nota.
+     */
     public void crearNota(String contenido) {
         notas.add(new Nota(contenido));
     }
 
+    /**
+     * Elimina una nota de la lista en el índice especificado.
+     *
+     * @param indice El índice de la nota a eliminar.
+     */
     public void eliminarNota(int indice) {
         if (indice >= 0 && indice < notas.size()) {
             notas.remove(indice);
         }
     }
 
+    /**
+     * Elimina todas las notas de la lista.
+     */
     public void eliminarTodas() {
         notas.clear();
     }
 
+    /**
+     * Guarda una nota específica en un archivo.
+     * Esta operación delega la tarea a la clase NotaDAO.
+     *
+     * @param indice El índice de la nota a guardar.
+     * @param rutaArchivo La ruta del archivo donde se guardará la nota.
+     * @return true si la nota se guardó exitosamente, false en caso contrario.
+     */
     public boolean guardarNota(int indice, String rutaArchivo) {
         if (indice >= 0 && indice < notas.size()) {
             Nota notaAGuardar = notas.get(indice);
@@ -291,6 +461,12 @@ public class GestorNotas {
         return false;
     }
 
+    /**
+     * Busca notas que contengan un texto específico (sin distinción entre mayúsculas y minúsculas).
+     *
+     * @param texto El texto a buscar dentro de las notas.
+     * @return Una lista de los índices de las notas que contienen el texto.
+     */
     public List<Integer> buscar(String texto) {
         List<Integer> resultados = new ArrayList<>();
         String textoLower = texto.toLowerCase();
@@ -302,11 +478,21 @@ public class GestorNotas {
         return resultados;
     }
 
+    /**
+     * Obtiene una copia de la lista de notas.
+     *
+     * @return Una nueva lista que contiene todas las notas.
+     */
     public List<Nota> getNotas() {
         return new ArrayList<>(notas);
     }
     
-    // Método agregado para obtener una nota específica
+    /**
+     * Obtiene una nota específica por su índice.
+     *
+     * @param indice El índice de la nota deseada.
+     * @return El objeto Nota en el índice especificado, o null si el índice es inválido.
+     */
     public Nota getNota(int indice){
         if (indice >= 0 && indice < notas.size()) {
             return notas.get(indice);
@@ -314,6 +500,11 @@ public class GestorNotas {
         return null;
     }
 
+    /**
+     * Obtiene una lista con el contenido de todas las notas.
+     *
+     * @return Una lista de cadenas de texto, donde cada cadena es el contenido de una nota.
+     */
     public List<String> getContenidoNotas() {
         List<String> contenidos = new ArrayList<>();
         for (Nota nota : notas) {
@@ -322,11 +513,17 @@ public class GestorNotas {
         return contenidos;
     }
     
+    /**
+     * Actualiza el contenido de una nota en el índice especificado.
+     *
+     * @param indice El índice de la nota a actualizar.
+     * @param contenido El nuevo texto para la nota.
+     */
     public void actualizarContenidoNota(int indice, String contenido) {
         if (indice >= 0 && indice < notas.size()) {
             notas.get(indice).setContenido(contenido);
         }
-    }   
+    }    
 }```
 
 ## `FlashNotes\src\main\java\com\mycompany\flashnotes\modelo\Nota.java`
@@ -337,20 +534,43 @@ package com.mycompany.flashnotes.modelo;
 import java.io.Serializable;
 
 /**
+ * La clase Nota representa un objeto de datos simple (POJO - Plain Old Java Object)
+ * que encapsula el contenido de una nota de texto.
+ *
+ * Esta clase es parte del modelo del patrón de diseño MVC y se encarga
+ * de gestionar la información de una sola nota, sin preocuparse por la
+ * interfaz de usuario o la lógica de negocio.
  *
  * @author jesus
  */
-public class Nota {
+public class Nota implements Serializable {
+    
+    // El contenido de la nota. Es el dato principal de este objeto.
     private String contenido;
 
+    /**
+     * Constructor de la clase Nota.
+     *
+     * @param contenido El texto inicial de la nota.
+     */
     public Nota(String contenido) {
         this.contenido = contenido;
     }
 
+    /**
+     * Obtiene el contenido de la nota.
+     *
+     * @return El contenido de la nota como una cadena de texto.
+     */
     public String getContenido() {
         return contenido;
     }
 
+    /**
+     * Establece o actualiza el contenido de la nota.
+     *
+     * @param contenido El nuevo texto para la nota.
+     */
     public void setContenido(String contenido) {
         this.contenido = contenido;
     }
@@ -370,40 +590,72 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 /**
+ * La clase NotaDAO (Data Access Object) se encarga de la persistencia de los datos,
+ * es decir, de guardar y cargar objetos de tipo Nota desde y hacia el sistema de archivos.
+ *
+ * Su única responsabilidad es interactuar con el almacenamiento (en este caso, archivos de texto),
+ * manteniendo esta lógica separada del modelo y el controlador.
  *
  * @author jesus
  */
 public class NotaDAO {
+    
+    /**
+     * Guarda el contenido de un objeto Nota en un archivo de texto.
+     *
+     * @param nota El objeto Nota que contiene el texto a guardar.
+     * @param rutaArchivo La ruta completa del archivo donde se guardará la nota.
+     * @return true si la nota se guardó exitosamente, false en caso de error.
+     */
     public boolean guardarNotaEnArchivo(Nota nota, String rutaArchivo) {
+        // El bloque try-with-resources asegura que el BufferedWriter se cierre automáticamente.
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(rutaArchivo))) {
             writer.write(nota.getContenido());
             return true;
         } catch (IOException e) {
+            // En caso de un error de E/S, se imprime la pila de errores para depuración.
             e.printStackTrace();
             return false;
         }
     }
 
+    /**
+     * Carga el contenido de un archivo de texto y lo convierte en un objeto Nota.
+     *
+     * @param rutaArchivo La ruta completa del archivo a cargar.
+     * @return Un nuevo objeto Nota con el contenido del archivo, o null si ocurre un error.
+     */
     public Nota cargarNotaDesdeArchivo(String rutaArchivo) {
         StringBuilder contenido = new StringBuilder();
+        // El bloque try-with-resources asegura que el BufferedReader se cierre automáticamente.
         try (BufferedReader reader = new BufferedReader(new FileReader(rutaArchivo))) {
             String linea;
+            // Lee el archivo línea por línea hasta el final.
             while ((linea = reader.readLine()) != null) {
                 contenido.append(linea).append(System.lineSeparator());
             }
+            // Retorna un nuevo objeto Nota con el contenido del archivo.
+            // Se usa .trim() para eliminar el último salto de línea.
             return new Nota(contenido.toString().trim());
         } catch (IOException e) {
+            // En caso de un error de E/S, se imprime la pila de errores para depuración.
             e.printStackTrace();
             return null;
         }
     }
 
+    /**
+     * Elimina un archivo del sistema de archivos.
+     *
+     * @param rutaArchivo La ruta completa del archivo a eliminar.
+     * @return true si el archivo existía y fue eliminado exitosamente, false en caso contrario.
+     */
     public boolean eliminarArchivo(String rutaArchivo) {
         File file = new File(rutaArchivo);
+        // Verifica si el archivo existe y luego intenta eliminarlo.
         return file.exists() && file.delete();
     }
-}
-```
+}```
 
 ## `FlashNotes\src\main\java\com\mycompany\flashnotes\vista\VistaNotas.java`
 
@@ -423,28 +675,93 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /**
+ * La clase VistaNotas representa la interfaz de usuario (UI) de la aplicación FlashNotes.
+ *
+ * Su principal responsabilidad es:
+ * 1.  Mostrar la información que recibe del modelo a través del controlador.
+ * 2.  Capturar las interacciones del usuario (clics en botones, escritura, etc.).
+ * 3.  Notificar al controlador sobre estas interacciones, sin contener lógica de negocio.
+ *
+ * Esta clase implementa la interfaz {@link VistaNotasInterface}, lo que la desacopla
+ * de manera efectiva del controlador y facilita la sustitución de la UI si fuera necesario.
  *
  * @author jesus
  */
-public class VistaNotas extends javax.swing.JFrame {
-    
-    private int notaSeleccionadaIndex = -1;
-    private final Border defaultBorder = BorderFactory.createEmptyBorder(5, 5, 5, 5);
-    private final Border selectedBorder = BorderFactory.createLineBorder(new Color(155, 182, 255), 2);
-    private final DocumentListener documentListener;
-    
-    // Listener para guardar cambios de texto
-    private GuardarCambiosListener guardarCambiosListener;
-    
-    // Listener para seleccionar una nota
-    private NotaSeleccionadaListener notaSeleccionadaListener;
+public class VistaNotas extends javax.swing.JFrame implements VistaNotasInterface {
+
+    // ====================================================================================
+    // ATRIBUTOS DE LA CLASE
+    // ¿Por qué están aquí? Son el "estado" de la vista. Son datos necesarios para
+    // que la UI funcione, como el índice de la nota seleccionada o la apariencia
+    // de los bordes. Declararlos al inicio es una convención estándar y limpia.
+    // ====================================================================================
     
     /**
-     * Creates new form VistaNotas
+     * El índice de la nota que está actualmente seleccionada en la lista.
+     * Su valor inicial es -1, indicando que no hay ninguna nota seleccionada.
      */
+    private int notaSeleccionadaIndex = -1;
+    
+    /**
+     * El borde por defecto para las notas que no están seleccionadas.
+     * Es una variable final para garantizar que no se modifique en tiempo de ejecución.
+     */
+    private final Border defaultBorder = BorderFactory.createEmptyBorder(5, 5, 5, 5);
+    
+    /**
+     * El borde para la nota que está actualmente seleccionada.
+     * Su color y grosor la distinguen visualmente de las demás.
+     */
+    private final Border selectedBorder = BorderFactory.createLineBorder(new Color(155, 182, 255), 2);
+    
+    /**
+     * El listener que se encarga de monitorear los cambios de texto en el área de contenido.
+     * Es una variable final porque se inicializa una vez y no cambia.
+     */
+    private final DocumentListener documentListener;
+    
+    /**
+     * Referencia al listener que el controlador proporciona para guardar cambios.
+     * Se usa para notificar al controlador cuando el usuario edita una nota.
+     */
+    private VistaNotasInterface.GuardarCambiosListener guardarCambiosListener;
+    
+    /**
+     * Referencia al listener que el controlador proporciona para la selección de notas.
+     * Se usa para notificar al controlador cuando el usuario hace clic en una nota.
+     */
+    private VistaNotasInterface.NotaSeleccionadaListener notaSeleccionadaListener;
+    
+    // ====================================================================================
+    // CONSTRUCTOR DE LA CLASE
+    // ¿Por qué está organizado así? Para que el constructor sea más legible.
+    // Se delega la lógica compleja de inicialización a métodos privados con nombres
+    // descriptivos, siguiendo el Principio de Responsabilidad Única.
+    // ====================================================================================
+
     public VistaNotas() {
-        // Inicializa el DocumentListener una sola vez
-        documentListener = new DocumentListener() {
+        // Inicialización de listeners
+        this.documentListener = crearDocumentListener();
+        
+        // Inicialización de los componentes de la interfaz de usuario.
+        // Este método es autogenerado por NetBeans/Swing.
+        initComponents();
+        
+        // Configuración adicional de la UI
+        configurarUI();
+        
+        // Asignación de listeners a los componentes
+        asignarListeners();
+    }
+
+    /**
+     * Crea e inicializa el DocumentListener para el área de texto de la nota.
+     * Su propósito es notificar al controlador en tiempo real cada vez que el
+     * usuario escribe o borra texto.
+     * @return Una nueva instancia de DocumentListener.
+     */
+    private DocumentListener crearDocumentListener() {
+        return new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) { notificarCambios(); }
             @Override
@@ -453,88 +770,124 @@ public class VistaNotas extends javax.swing.JFrame {
             public void changedUpdate(DocumentEvent e) { notificarCambios(); }
             
             private void notificarCambios() {
+                // Solo notifica al controlador si hay un listener asignado y una nota seleccionada.
                 if (guardarCambiosListener != null && notaSeleccionadaIndex >= 0) {
                     guardarCambiosListener.onGuardarCambios(txtCuerpoDerContenidoNota.getText());
                 }
             }
         };
+    }
+    
+    /**
+     * Realiza configuraciones visuales adicionales que no están en initComponents().
+     * Su propósito es centralizar la lógica de personalización de la ventana.
+     */
+    private void configurarUI() {
+        setLocationRelativeTo(null); // Centra la ventana en la pantalla.
         
-        initComponents();
-        setLocationRelativeTo(null);
-        // Agrega el listener inicial al JTextArea
-        txtCuerpoDerContenidoNota.getDocument().addDocumentListener(documentListener);
-        
-        // Inicializa el panel izquierdo para que use un BoxLayout vertical
+        // Configura el layout para que las notas se apilen verticalmente.
         panelCuerpoIzquierdo.setLayout(new javax.swing.BoxLayout(panelCuerpoIzquierdo, javax.swing.BoxLayout.Y_AXIS));
+        
+        opcTemaClaro.setActionCommand("Claro");
+        opcTemaOscuro.setActionCommand("Oscuro");
 
-        // Agrupar temas
+        // Configura los botones de radio para los temas, asegurando que solo uno pueda ser seleccionado.
         ButtonGroup temas = new ButtonGroup();
         temas.add(opcTemaClaro);
         temas.add(opcTemaOscuro);
         opcTemaOscuro.setSelected(true);
-        
     }
     
-    public interface NotaSeleccionadaListener {
-        void onNotaSeleccionada(int index);
+    /**
+     * Asigna todos los listeners necesarios a los componentes de la UI.
+     * Su propósito es separar la asignación de eventos del resto de la inicialización.
+     */
+    private void asignarListeners() {
+        txtCuerpoDerContenidoNota.getDocument().addDocumentListener(this.documentListener);
     }
-        
-    public void setNotaSeleccionadaListener(NotaSeleccionadaListener listener) {
+    
+    // ====================================================================================
+    // MÉTODOS DE LA INTERFAZ
+    // Estos métodos son el "contrato" de la vista. El controlador los usa para
+    // enviar comandos y recibir información sin saber los detalles internos de la UI.
+    // ====================================================================================
+
+    @Override
+    public void setNotaSeleccionadaListener(VistaNotasInterface.NotaSeleccionadaListener listener) {
         this.notaSeleccionadaListener = listener;
     }
 
-    public interface GuardarCambiosListener {
-        void onGuardarCambios(String contenido);
-    }
-        
-    public void setGuardarCambiosListener(GuardarCambiosListener listener) {
+    @Override
+    public void setGuardarCambiosListener(VistaNotasInterface.GuardarCambiosListener listener) {
         this.guardarCambiosListener = listener;
     }
-        
+
+    @Override
     public void addCrearNotaListener(ActionListener l) {
         btnElementoNuevaNota.addActionListener(l);
         opcNuevaNota.addActionListener(l);
     }
 
+    @Override
     public void addGuardarNotaListener(ActionListener l) {
         btnElementoGuardarTxt.addActionListener(l);
         opcGuardarElemento.addActionListener(l);
     }
 
+    @Override
+    public void addCambiarTemaOscuro(ActionListener l){
+        opcTemaOscuro.addActionListener(l);
+    }
+    
+    @Override
+    public void addCambiarTemaClaro(ActionListener l){
+        opcTemaClaro.addActionListener(l);
+    }
+    
+    @Override
     public void addLimpiarTodoListener(ActionListener l) {
         btnElementoLimpiarTodo.addActionListener(l);
         opcLimipiarTodo.addActionListener(l);
     }
 
+    @Override
     public void addBuscarListener(ActionListener l) {
         txtElementoBuscarNotaActual.addActionListener(l);
     }
 
+    @Override
     public String getTextoBusqueda() {
         return txtElementoBuscarNotaActual.getText();
     }
 
+    @Override
     public String getContenidoNota() {
         return txtCuerpoDerContenidoNota.getText();
     }
 
-    // Este es el método corregido y completo que estabas pidiendo.
+    @Override
     public void setContenidoNota(String contenido) {
-        // Remueve el listener antes de cambiar el texto para evitar que se dispare
+        // ¿Por qué se remueve y se agrega el listener?
+        // Esto es un patrón común para evitar que el listener se active cuando el
+        // controlador actualiza el texto programáticamente, lo que podría
+        // causar un bucle de eventos no deseado.
         txtCuerpoDerContenidoNota.getDocument().removeDocumentListener(documentListener);
-        
-        // Cambia el texto del JTextArea
         txtCuerpoDerContenidoNota.setText(contenido);
-        
-        // Vuelve a agregar el listener
         txtCuerpoDerContenidoNota.getDocument().addDocumentListener(documentListener);
     }
 
+    @Override
     public int getNotaSeleccionadaIndex() {
         return notaSeleccionadaIndex;
     }
     
-    // Este método ahora es el que se encarga de cambiar la selección visual
+    /**
+     * Actualiza la selección visual de las notas en el panel izquierdo.
+     * Su propósito es puramente visual: cambiar el borde de la nota seleccionada.
+     * No dispara ningún evento al controlador.
+     * @param index El índice de la nota que debe ser marcada como seleccionada.
+     */
+    @Override
     public void seleccionarNota(int index) {
         this.notaSeleccionadaIndex = index;
         for (int i = 0; i < panelCuerpoIzquierdo.getComponentCount(); i++) {
@@ -543,7 +896,12 @@ public class VistaNotas extends javax.swing.JFrame {
         }
     }
 
-    // El controlador ahora es responsable de llamar a este método para actualizar la vista
+    /**
+     * Muestra las notas en el panel lateral izquierdo.
+     * Su propósito es renderizar la lista de notas que le proporciona el controlador.
+     * @param contenidos Una lista de Strings con el contenido de cada nota.
+     */
+    @Override
     public void mostrarNotas(List<String> contenidos) {
         panelCuerpoIzquierdo.removeAll();
         panelCuerpoIzquierdo.revalidate();
@@ -559,6 +917,11 @@ public class VistaNotas extends javax.swing.JFrame {
             JLabel notaLabel = new JLabel(getTituloNota(contenido));
             notaLabel.setBorder(defaultBorder);
             notaLabel.putClientProperty("index", i);
+            
+            // ¿Por qué se agrega el MouseListener aquí?
+            // Cada JLabel necesita su propio listener para notificar a la vista (y al controlador)
+            // cuando se ha hecho clic en él. La lógica de qué hacer con ese clic se delega al
+            // notaSeleccionadaListener.
             notaLabel.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
@@ -575,6 +938,12 @@ public class VistaNotas extends javax.swing.JFrame {
         panelCuerpoIzquierdo.repaint();
     }
 
+    /**
+     * Extrae un título de una nota (las primeras 3 palabras).
+     * Es un método helper privado que ayuda a la vista a renderizar los títulos de las notas.
+     * @param contenido El contenido completo de la nota.
+     * @return El título de la nota, limitado a tres palabras.
+     */
     private String getTituloNota(String contenido) {
         if (contenido == null || contenido.trim().isEmpty()) {
             return "Nueva Nota";
@@ -587,6 +956,13 @@ public class VistaNotas extends javax.swing.JFrame {
         return titulo.toString().trim();
     }
 
+    /**
+     * Actualiza el título visual de una nota en el panel izquierdo.
+     * Se usa cuando el usuario edita el contenido de una nota.
+     * @param index El índice de la nota a actualizar.
+     * @param contenido El nuevo contenido de la nota para generar el título.
+     */
+    @Override
     public void actualizarTituloNota(int index, String contenido) {
         if (index >= 0 && index < panelCuerpoIzquierdo.getComponentCount()) {
             JLabel label = (JLabel) panelCuerpoIzquierdo.getComponent(index);
@@ -738,10 +1114,10 @@ public class VistaNotas extends javax.swing.JFrame {
         opcNuevaNota.setText("Nueva Nota");
         menuOpciones.add(opcNuevaNota);
 
-        opcGuardarElemento.setText("Guardar");
+        opcGuardarElemento.setText("Guardar TXT");
         menuOpciones.add(opcGuardarElemento);
 
-        opcLimipiarTodo.setText("LimpiarTodo");
+        opcLimipiarTodo.setText("Limpiar Todo");
         menuOpciones.add(opcLimipiarTodo);
 
         menuBarra.add(menuOpciones);
@@ -820,4 +1196,60 @@ public class VistaNotas extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
 }
 ```
+
+## `FlashNotes\src\main\java\com\mycompany\flashnotes\vista\VistaNotasInterface.java`
+
+```java
+package com.mycompany.flashnotes.vista;
+
+import java.awt.event.ActionListener;
+import java.util.List;
+
+/**
+ * La interfaz VistaNotasInterface define los métodos que el controlador puede
+ * utilizar para interactuar con la vista. Esto desacopla el controlador de
+ * la implementación específica de la interfaz de usuario (por ejemplo, Swing).
+ */
+public interface VistaNotasInterface {
+
+    /**
+     * Interfaz anidada para notificar al controlador cuando una nota es seleccionada.
+     */
+    interface NotaSeleccionadaListener {
+        void onNotaSeleccionada(int index);
+    }
+    
+    /**
+     * Interfaz anidada para notificar al controlador cuando el contenido de la nota cambia.
+     */
+    interface GuardarCambiosListener {
+        void onGuardarCambios(String contenido);
+    }
+
+    // Métodos para establecer los listeners del controlador
+    void setNotaSeleccionadaListener(NotaSeleccionadaListener listener);
+    void setGuardarCambiosListener(GuardarCambiosListener listener);
+    
+    // Métodos para que el controlador adjunte ActionListeners a los componentes de la vista
+    void addCrearNotaListener(ActionListener listener);
+    void addGuardarNotaListener(ActionListener listener);
+    void addLimpiarTodoListener(ActionListener listener);
+    void addBuscarListener(ActionListener listener);
+    void addCambiarTemaOscuro(ActionListener listener);
+    void addCambiarTemaClaro(ActionListener listener);
+
+    // Métodos para obtener datos de la vista
+    String getTextoBusqueda();
+    String getContenidoNota();
+    int getNotaSeleccionadaIndex();
+
+    // Métodos para que el controlador actualice la vista
+    void setContenidoNota(String contenido);
+    void mostrarNotas(List<String> contenidos);
+    void seleccionarNota(int index);
+    void actualizarTituloNota(int index, String contenido);
+    
+    // Método para hacer visible la ventana de la aplicación
+    void setVisible(boolean visible);
+}```
 

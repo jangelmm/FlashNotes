@@ -33,6 +33,10 @@ public interface VistaNotasInterface {
     void addGuardarNotaListener(ActionListener listener);
     void addLimpiarTodoListener(ActionListener listener);
     void addBuscarListener(ActionListener listener);
+    void addCambiarTemaOscuro(ActionListener listener);
+    void addCambiarTemaClaro(ActionListener listener);
+    void addVisitarDocumentacion(ActionListener listener);
+    void addVisitarSitioWeb(ActionListener listener);
 
     // Métodos para obtener datos de la vista
     String getTextoBusqueda();

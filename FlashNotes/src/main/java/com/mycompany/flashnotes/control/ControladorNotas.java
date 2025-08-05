@@ -7,6 +7,17 @@ import java.awt.event.ActionListener;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.FlatDarkLaf;
+import java.awt.Desktop;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 /**
  * La clase ControladorNotas es el "Controlador" en el patrón de diseño MVC.
@@ -54,6 +65,14 @@ public class ControladorNotas implements ActionListener {
         vista.setNotaSeleccionadaListener(this::cambiarNotaSeleccionada);
         vista.setGuardarCambiosListener(this::guardarCambiosNotaActual);
 
+        // Agrega estos dos listeners para los menús de tema
+        vista.addCambiarTemaOscuro(this);
+        vista.addCambiarTemaClaro(this);
+        
+        //Agregar listener para los botones de Ayuda
+        vista.addVisitarDocumentacion(this);
+        vista.addVisitarSitioWeb(this);
+        
         // Si la aplicación se inicia sin notas, crea una nota vacía por defecto.
         if (gestor.getNotas().isEmpty()) {
             gestor.crearNota("");
@@ -61,6 +80,7 @@ public class ControladorNotas implements ActionListener {
         
         // Carga la interfaz de usuario inicial con los datos del modelo.
         actualizarVistaCompleta();
+        cambiarTemaClaro();
     }
     
     /**
@@ -81,6 +101,18 @@ public class ControladorNotas implements ActionListener {
                 break;
             case "Limpiar Todo":
                 limpiarTodas();
+                break;
+            case "Oscuro":
+                cambiarTemaOscuro();
+                break;
+            case "Claro":
+                cambiarTemaClaro();
+                break;
+            case "Documentacion":
+                visitarDocumentacion();
+                break;
+            case "Donar":
+                visitarSitioWeb();
                 break;
         }
     }
@@ -196,6 +228,47 @@ public class ControladorNotas implements ActionListener {
             // Si no hay notas, limpia el área de texto y la selección.
             vista.setContenidoNota("");
             vista.seleccionarNota(-1);
+        }
+    }
+    
+    private void cambiarTemaOscuro(){
+        try {
+            UIManager.setLookAndFeel(new FlatDarkLaf()); // Usa FlatDarkLaf para el tema oscuro
+            SwingUtilities.updateComponentTreeUI(vista);
+        } catch (UnsupportedLookAndFeelException e) {
+            e.printStackTrace();
+        }
+    }
+    private void cambiarTemaClaro(){
+        try {
+            UIManager.setLookAndFeel(new FlatLightLaf()); // Usa FlatLightLaf para el tema claro
+            SwingUtilities.updateComponentTreeUI(vista);
+        } catch (UnsupportedLookAndFeelException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private void visitarDocumentacion(){
+        try {
+            try {
+                Desktop.getDesktop().browse(new URI("https://github.com/jangelmm/FlashNotes"));
+            } catch (IOException ex) {
+                
+            }
+        } catch (URISyntaxException ex) {
+            
+        }
+    }
+    
+    private void visitarSitioWeb(){
+        try {
+            try {
+                Desktop.getDesktop().browse(new URI("https://jangelmm.github.io/"));
+            } catch (IOException ex) {
+                System.out.println("Error 1");
+            }
+        } catch (URISyntaxException ex) {
+            System.out.println("Error 2");
         }
     }
 }

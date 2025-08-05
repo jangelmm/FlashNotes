@@ -52,7 +52,7 @@
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="opcDocumentacion">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Documentaci&#xf3;n"/>
+                <Property name="text" type="java.lang.String" value="Documentacion"/>
               </Properties>
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="opcSitioWeb">
