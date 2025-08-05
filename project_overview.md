@@ -51,7 +51,6 @@ FlashNotes
 │   │   │               ├── vista
 │   │   │               │   ├── VistaNotas$1.class
 │   │   │               │   ├── VistaNotas$2.class
-│   │   │               │   ├── VistaNotas$3.class
 │   │   │               │   ├── VistaNotas$GuardarCambiosListener.class
 │   │   │               │   ├── VistaNotas$NotaSeleccionadaListener.class
 │   │   │               │   ├── VistaNotas.class
@@ -75,6 +74,7 @@ FlashNotes
 │   │   │               └── inputFiles.lst
 │   │   ├── test-classes
 │   │   └── FlashNotes-1.0-SNAPSHOT.jar
+│   ├── nbactions.xml
 │   ├── notas.txt
 │   ├── pom.xml
 │   └── script.py
@@ -106,11 +106,6 @@ public class FlashNotes {
             VistaNotas vista = new VistaNotas();
             GestorNotas gestor = new GestorNotas();
             ControladorNotas controlador = new ControladorNotas(gestor, vista);
-            
-            // Configurar listeners adicionales
-            vista.setNotaSeleccionadaListener(controlador::cambiarNotaSeleccionada);
-            vista.setGuardarCambiosListener(controlador::guardarCambiosNotaActual);
-            
             vista.setVisible(true);
         });
     }
@@ -122,14 +117,14 @@ public class FlashNotes {
 package com.mycompany.flashnotes.control;
 
 import com.mycompany.flashnotes.modelo.GestorNotas;
-import com.mycompany.flashnotes.modelo.Nota;
 import com.mycompany.flashnotes.vista.VistaNotas;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
-public class ControladorNotas {
+public class ControladorNotas implements ActionListener {
     private final GestorNotas gestor;
     private final VistaNotas vista;
 
@@ -140,27 +135,78 @@ public class ControladorNotas {
     }
 
     private void initController() {
-        vista.addCrearNotaListener(e -> crearNota());
-        vista.addGuardarNotaListener(e -> guardarNota());
-        vista.addLimpiarTodoListener(e -> limpiarTodas());
-        vista.addBuscarListener(e -> buscarNota());
-        vista.setContenidoNota("");
-        actualizarVista();
-    }
+        vista.addCrearNotaListener(this);
+        vista.addGuardarNotaListener(this);
+        vista.addLimpiarTodoListener(this);
+        vista.addBuscarListener(this);
+        
+        // Listener para la selección de notas
+        vista.setNotaSeleccionadaListener(this::cambiarNotaSeleccionada);
+        // Listener para guardar cambios de texto
+        vista.setGuardarCambiosListener(this::guardarCambiosNotaActual);
 
-    private void guardarNota() {
-        int idx = vista.getNotaSeleccionadaIndex();
-        if (idx >= 0) {
-            JFileChooser chooser = new JFileChooser();
-            if (chooser.showSaveDialog(vista) == JFileChooser.APPROVE_OPTION) {
-                String ruta = chooser.getSelectedFile().getAbsolutePath();
-                gestor.guardarNota(idx, ruta);
-            }
-        } else {
-            JOptionPane.showMessageDialog(vista, "Selecciona una nota para guardar.", "Error", JOptionPane.ERROR_MESSAGE);
+        // Si no hay notas, crea una por defecto
+        if (gestor.getNotas().isEmpty()) {
+            gestor.crearNota("");
+        }
+        
+        actualizarVistaCompleta();
+    }
+    
+    // Método que se activa al hacer clic en los botones
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        String comando = e.getActionCommand();
+        switch (comando) {
+            case "Nueva Nota":
+                crearNuevaNota();
+                break;
+            case "Guardar TXT":
+                guardarNota();
+                break;
+            case "Limpiar Todo":
+                limpiarTodas();
+                break;
         }
     }
+    
+    // Maneja la creación de una nueva nota
+    private void crearNuevaNota() {
+        gestor.crearNota("");
+        actualizarVistaCompleta();
+        vista.seleccionarNota(gestor.getNotas().size() - 1);
+        vista.setContenidoNota("");
+    }
 
+    // Maneja la acción de guardar un archivo
+    private void guardarNota() {
+        int indice = vista.getNotaSeleccionadaIndex();
+        if (indice < 0) {
+            JOptionPane.showMessageDialog(vista, "Selecciona una nota para guardar.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        JFileChooser fileChooser = new JFileChooser();
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("Archivos de texto (*.txt)", "txt");
+        fileChooser.setFileFilter(filter);
+        
+        int userSelection = fileChooser.showSaveDialog(vista);
+        
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            String rutaArchivo = fileChooser.getSelectedFile().getAbsolutePath();
+            if (!rutaArchivo.toLowerCase().endsWith(".txt")) {
+                rutaArchivo += ".txt";
+            }
+            
+            if (gestor.guardarNota(indice, rutaArchivo)) {
+                JOptionPane.showMessageDialog(vista, "Nota guardada exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(vista, "Error al guardar la nota.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+    
+    // Maneja la eliminación de todas las notas
     private void limpiarTodas() {
         int confirm = JOptionPane.showConfirmDialog(vista, 
                 "¿Eliminar todas las notas? Esta acción no se puede deshacer",
@@ -169,59 +215,38 @@ public class ControladorNotas {
 
         if (confirm == JOptionPane.YES_OPTION) {
             gestor.eliminarTodas();
-            vista.setContenidoNota("");
-            actualizarVista();
+            gestor.crearNota(""); // Crear una nota vacía por defecto
+            actualizarVistaCompleta();
+            vista.seleccionarNota(0);
         }
-    }
-
-    private void buscarNota() {
-        String texto = vista.getTextoBusqueda();
-        List<Integer> resultados = gestor.buscar(texto);
-        if (!resultados.isEmpty()) {
-            int primero = resultados.get(0);
-            vista.mostrarNotas(gestor.getContenidoNotas());
-            vista.seleccionarNota(primero);
-            vista.setContenidoNota(gestor.getNotas().get(primero).getContenido());
-        } else {
-            JOptionPane.showMessageDialog(vista, "No se encontraron coincidencias.", "Búsqueda", JOptionPane.INFORMATION_MESSAGE);
-        }
-    }
-
-    private void actualizarVista() {
-        vista.mostrarNotas(gestor.getContenidoNotas());
-    }
-
-    public void cambiarNotaSeleccionada(int indice) {
-        if (indice >= 0 && indice < gestor.getNotas().size()) {
-            if (vista.getNotaSeleccionadaIndex() >= 0) {
-                guardarCambiosNotaActual(vista.getContenidoNota());
-            }
-            Nota nota = gestor.getNotas().get(indice);
-            vista.setContenidoNota(nota.getContenido());
-            vista.seleccionarNota(indice);
-            actualizarVista();
-        }
-    }
-
-    public void crearNota() {
-        if (vista.getNotaSeleccionadaIndex() >= 0) {
-            guardarCambiosNotaActual(vista.getContenidoNota());
-        }
-        gestor.crearNota(""); // Crear nueva nota vacía
-        actualizarVista();
-        int nuevaNotaIndex = gestor.getNotas().size() - 1;
-        vista.seleccionarNota(nuevaNotaIndex);
-        vista.setContenidoNota(""); // Limpiar el área de texto
     }
     
-    public void guardarCambiosNotaActual(String contenido) {
+    // Método para manejar el clic en los labels de la lista de notas
+    private void cambiarNotaSeleccionada(int indice) {
+        if(indice >= 0 && indice < gestor.getNotas().size()){
+            vista.setContenidoNota(gestor.getNota(indice).getContenido());
+            vista.seleccionarNota(indice);
+        }
+    }
+    
+    // Método para guardar los cambios de la nota actual
+    private void guardarCambiosNotaActual(String contenido) {
         int indice = vista.getNotaSeleccionadaIndex();
         if (indice >= 0 && indice < gestor.getNotas().size()) {
-            System.out.println("Guardando nota " + indice + " con contenido: " + contenido);
             gestor.actualizarContenidoNota(indice, contenido);
-            actualizarVista();
+            vista.actualizarTituloNota(indice, contenido);
+        }
+    }
+
+    // Este método centraliza la actualización de la vista desde el modelo
+    private void actualizarVistaCompleta() {
+        vista.mostrarNotas(gestor.getContenidoNotas());
+        if (!gestor.getNotas().isEmpty()) {
+            vista.setContenidoNota(gestor.getNota(0).getContenido());
+            vista.seleccionarNota(0);
         } else {
-            System.out.println("Índice inválido para guardar: " + indice);
+            vista.setContenidoNota("");
+            vista.seleccionarNota(-1);
         }
     }
 }```
@@ -279,6 +304,14 @@ public class GestorNotas {
 
     public List<Nota> getNotas() {
         return new ArrayList<>(notas);
+    }
+    
+    // Método agregado para obtener una nota específica
+    public Nota getNota(int indice){
+        if (indice >= 0 && indice < notas.size()) {
+            return notas.get(indice);
+        }
+        return null;
     }
 
     public List<String> getContenidoNotas() {
@@ -398,25 +431,20 @@ public class VistaNotas extends javax.swing.JFrame {
     private int notaSeleccionadaIndex = -1;
     private final Border defaultBorder = BorderFactory.createEmptyBorder(5, 5, 5, 5);
     private final Border selectedBorder = BorderFactory.createLineBorder(new Color(155, 182, 255), 2);
+    private final DocumentListener documentListener;
+    
+    // Listener para guardar cambios de texto
+    private GuardarCambiosListener guardarCambiosListener;
+    
+    // Listener para seleccionar una nota
+    private NotaSeleccionadaListener notaSeleccionadaListener;
+    
     /**
      * Creates new form VistaNotas
      */
     public VistaNotas() {
-        
-        initComponents();
-        setLocationRelativeTo(null);
-        
-        // Inicializa el panel izquierdo para que use un BoxLayout vertical
-        panelCuerpoIzquierdo.setLayout(new javax.swing.BoxLayout(panelCuerpoIzquierdo, javax.swing.BoxLayout.Y_AXIS));
-
-        // Agrupar temas
-        ButtonGroup temas = new ButtonGroup();
-        temas.add(opcTemaClaro);
-        temas.add(opcTemaOscuro);
-        opcTemaOscuro.setSelected(true);
-        
-        // Agregar listener para cambios en el texto
-        txtCuerpoDerContenidoNota.getDocument().addDocumentListener(new DocumentListener() {
+        // Inicializa el DocumentListener una sola vez
+        documentListener = new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) { notificarCambios(); }
             @Override
@@ -427,18 +455,30 @@ public class VistaNotas extends javax.swing.JFrame {
             private void notificarCambios() {
                 if (guardarCambiosListener != null && notaSeleccionadaIndex >= 0) {
                     guardarCambiosListener.onGuardarCambios(txtCuerpoDerContenidoNota.getText());
-                    actualizarTituloNota(notaSeleccionadaIndex);
                 }
             }
-        });
+        };
+        
+        initComponents();
+        setLocationRelativeTo(null);
+        // Agrega el listener inicial al JTextArea
+        txtCuerpoDerContenidoNota.getDocument().addDocumentListener(documentListener);
+        
+        // Inicializa el panel izquierdo para que use un BoxLayout vertical
+        panelCuerpoIzquierdo.setLayout(new javax.swing.BoxLayout(panelCuerpoIzquierdo, javax.swing.BoxLayout.Y_AXIS));
+
+        // Agrupar temas
+        ButtonGroup temas = new ButtonGroup();
+        temas.add(opcTemaClaro);
+        temas.add(opcTemaOscuro);
+        opcTemaOscuro.setSelected(true);
+        
     }
     
     public interface NotaSeleccionadaListener {
         void onNotaSeleccionada(int index);
     }
-    
-    private NotaSeleccionadaListener notaSeleccionadaListener;
-    
+        
     public void setNotaSeleccionadaListener(NotaSeleccionadaListener listener) {
         this.notaSeleccionadaListener = listener;
     }
@@ -446,9 +486,7 @@ public class VistaNotas extends javax.swing.JFrame {
     public interface GuardarCambiosListener {
         void onGuardarCambios(String contenido);
     }
-    
-    private GuardarCambiosListener guardarCambiosListener;
-    
+        
     public void setGuardarCambiosListener(GuardarCambiosListener listener) {
         this.guardarCambiosListener = listener;
     }
@@ -480,16 +518,42 @@ public class VistaNotas extends javax.swing.JFrame {
         return txtCuerpoDerContenidoNota.getText();
     }
 
+    // Este es el método corregido y completo que estabas pidiendo.
     public void setContenidoNota(String contenido) {
+        // Remueve el listener antes de cambiar el texto para evitar que se dispare
+        txtCuerpoDerContenidoNota.getDocument().removeDocumentListener(documentListener);
+        
+        // Cambia el texto del JTextArea
         txtCuerpoDerContenidoNota.setText(contenido);
+        
+        // Vuelve a agregar el listener
+        txtCuerpoDerContenidoNota.getDocument().addDocumentListener(documentListener);
     }
 
     public int getNotaSeleccionadaIndex() {
         return notaSeleccionadaIndex;
     }
+    
+    // Este método ahora es el que se encarga de cambiar la selección visual
+    public void seleccionarNota(int index) {
+        this.notaSeleccionadaIndex = index;
+        for (int i = 0; i < panelCuerpoIzquierdo.getComponentCount(); i++) {
+            JLabel label = (JLabel) panelCuerpoIzquierdo.getComponent(i);
+            label.setBorder(i == index ? selectedBorder : defaultBorder);
+        }
+    }
 
+    // El controlador ahora es responsable de llamar a este método para actualizar la vista
     public void mostrarNotas(List<String> contenidos) {
         panelCuerpoIzquierdo.removeAll();
+        panelCuerpoIzquierdo.revalidate();
+        panelCuerpoIzquierdo.repaint();
+
+        if (contenidos.isEmpty()) {
+            panelCuerpoIzquierdo.add(lblCuerpoIzquierdoNotasActivas);
+            return;
+        }
+        
         for (int i = 0; i < contenidos.size(); i++) {
             String contenido = contenidos.get(i);
             JLabel notaLabel = new JLabel(getTituloNota(contenido));
@@ -506,19 +570,9 @@ public class VistaNotas extends javax.swing.JFrame {
             });
             panelCuerpoIzquierdo.add(notaLabel);
         }
+        
         panelCuerpoIzquierdo.revalidate();
         panelCuerpoIzquierdo.repaint();
-    }
-
-    public void seleccionarNota(int index) {
-        this.notaSeleccionadaIndex = index;
-        for (int i = 0; i < panelCuerpoIzquierdo.getComponentCount(); i++) {
-            JLabel label = (JLabel) panelCuerpoIzquierdo.getComponent(i);
-            label.setBorder(i == index ? selectedBorder : defaultBorder);
-        }
-        if (notaSeleccionadaListener != null) {
-            notaSeleccionadaListener.onNotaSeleccionada(index);
-        }
     }
 
     private String getTituloNota(String contenido) {
@@ -532,17 +586,11 @@ public class VistaNotas extends javax.swing.JFrame {
         }
         return titulo.toString().trim();
     }
-    
-    private void guardarCambiosNotaActual() {
-        if (notaSeleccionadaIndex >= 0 && guardarCambiosListener != null) {
-            guardarCambiosListener.onGuardarCambios(txtCuerpoDerContenidoNota.getText());
-        }
-    }
-    
-    private void actualizarTituloNota(int index) {
+
+    public void actualizarTituloNota(int index, String contenido) {
         if (index >= 0 && index < panelCuerpoIzquierdo.getComponentCount()) {
             JLabel label = (JLabel) panelCuerpoIzquierdo.getComponent(index);
-            label.setText(getTituloNota(txtCuerpoDerContenidoNota.getText()));
+            label.setText(getTituloNota(contenido));
         }
     }
     
@@ -735,41 +783,6 @@ public class VistaNotas extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(VistaNotas.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(VistaNotas.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(VistaNotas.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(VistaNotas.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new VistaNotas().setVisible(true);
-            }
-        });
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnElementoGuardarTxt;

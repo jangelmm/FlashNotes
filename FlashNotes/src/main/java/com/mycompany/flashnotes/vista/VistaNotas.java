@@ -13,27 +13,39 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /**
+ * La clase VistaNotas representa la interfaz de usuario de la aplicación.
+ * Es la "Vista" en el patrón de diseño MVC. Su única responsabilidad es
+ * mostrar la información al usuario y capturar sus interacciones (clics,
+ * entrada de texto, etc.) para luego notificar al controlador.
+ *
+ * Esta clase no contiene lógica de negocio; solo lógica de presentación.
  *
  * @author jesus
  */
 public class VistaNotas extends javax.swing.JFrame {
     
+    // El índice de la nota que está seleccionada actualmente en la lista.
     private int notaSeleccionadaIndex = -1;
+    
+    // Estilos de borde para los JLabels que representan las notas.
     private final Border defaultBorder = BorderFactory.createEmptyBorder(5, 5, 5, 5);
     private final Border selectedBorder = BorderFactory.createLineBorder(new Color(155, 182, 255), 2);
+    
+    // Un único DocumentListener para el JTextArea, usado para notificar cambios.
     private final DocumentListener documentListener;
     
-    // Listener para guardar cambios de texto
+    // Listener para guardar cambios de texto, implementado en el controlador.
     private GuardarCambiosListener guardarCambiosListener;
     
-    // Listener para seleccionar una nota
+    // Listener para seleccionar una nota, implementado en el controlador.
     private NotaSeleccionadaListener notaSeleccionadaListener;
     
     /**
-     * Creates new form VistaNotas
+     * Crea y configura una nueva instancia del formulario VistaNotas.
      */
     public VistaNotas() {
-        // Inicializa el DocumentListener una sola vez
+        // Inicializa el DocumentListener una sola vez. Se usará para detectar
+        // cambios en el texto del JTextArea y notificar al controlador.
         documentListener = new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) { notificarCambios(); }
@@ -42,6 +54,10 @@ public class VistaNotas extends javax.swing.JFrame {
             @Override
             public void changedUpdate(DocumentEvent e) { notificarCambios(); }
             
+            /**
+             * Llama al listener para guardar cambios si está disponible y si
+             * hay una nota seleccionada.
+             */
             private void notificarCambios() {
                 if (guardarCambiosListener != null && notaSeleccionadaIndex >= 0) {
                     guardarCambiosListener.onGuardarCambios(txtCuerpoDerContenidoNota.getText());
@@ -49,82 +65,128 @@ public class VistaNotas extends javax.swing.JFrame {
             }
         };
         
-        initComponents();
+        initComponents(); // Método generado por el diseñador de GUI de NetBeans.
         setLocationRelativeTo(null);
-        // Agrega el listener inicial al JTextArea
+        
+        // Agrega el listener inicial al JTextArea.
         txtCuerpoDerContenidoNota.getDocument().addDocumentListener(documentListener);
         
-        // Inicializa el panel izquierdo para que use un BoxLayout vertical
+        // Inicializa el panel izquierdo para que use un BoxLayout vertical.
         panelCuerpoIzquierdo.setLayout(new javax.swing.BoxLayout(panelCuerpoIzquierdo, javax.swing.BoxLayout.Y_AXIS));
 
-        // Agrupar temas
+        // Agrupa los botones de radio para los temas.
         ButtonGroup temas = new ButtonGroup();
         temas.add(opcTemaClaro);
         temas.add(opcTemaOscuro);
         opcTemaOscuro.setSelected(true);
-        
     }
     
+    /**
+     * Interfaz para notificar al controlador cuando una nota es seleccionada.
+     */
     public interface NotaSeleccionadaListener {
         void onNotaSeleccionada(int index);
     }
         
+    /**
+     * Establece el listener que se llamará cuando se seleccione una nota.
+     * @param listener La implementación de la interfaz NotaSeleccionadaListener.
+     */
     public void setNotaSeleccionadaListener(NotaSeleccionadaListener listener) {
         this.notaSeleccionadaListener = listener;
     }
 
+    /**
+     * Interfaz para notificar al controlador cuando el contenido de la nota cambia.
+     */
     public interface GuardarCambiosListener {
         void onGuardarCambios(String contenido);
     }
         
+    /**
+     * Establece el listener que se llamará cuando el contenido de la nota cambie.
+     * @param listener La implementación de la interfaz GuardarCambiosListener.
+     */
     public void setGuardarCambiosListener(GuardarCambiosListener listener) {
         this.guardarCambiosListener = listener;
     }
         
+    /**
+     * Agrega un ActionListener para el botón y el ítem de menú de "Nueva Nota".
+     * @param l El ActionListener que manejará el evento.
+     */
     public void addCrearNotaListener(ActionListener l) {
         btnElementoNuevaNota.addActionListener(l);
         opcNuevaNota.addActionListener(l);
     }
 
+    /**
+     * Agrega un ActionListener para el botón y el ítem de menú de "Guardar TXT".
+     * @param l El ActionListener que manejará el evento.
+     */
     public void addGuardarNotaListener(ActionListener l) {
         btnElementoGuardarTxt.addActionListener(l);
         opcGuardarElemento.addActionListener(l);
     }
 
+    /**
+     * Agrega un ActionListener para el botón y el ítem de menú de "Limpiar Todo".
+     * @param l El ActionListener que manejará el evento.
+     */
     public void addLimpiarTodoListener(ActionListener l) {
         btnElementoLimpiarTodo.addActionListener(l);
         opcLimipiarTodo.addActionListener(l);
     }
 
+    /**
+     * Agrega un ActionListener para el campo de texto de búsqueda.
+     * @param l El ActionListener que manejará el evento.
+     */
     public void addBuscarListener(ActionListener l) {
         txtElementoBuscarNotaActual.addActionListener(l);
     }
 
+    /**
+     * Obtiene el texto del campo de búsqueda.
+     * @return El texto que el usuario ha introducido en el campo de búsqueda.
+     */
     public String getTextoBusqueda() {
         return txtElementoBuscarNotaActual.getText();
     }
 
+    /**
+     * Obtiene el contenido actual del área de texto de la nota.
+     * @return El contenido de la nota.
+     */
     public String getContenidoNota() {
         return txtCuerpoDerContenidoNota.getText();
     }
 
-    // Este es el método corregido y completo que estabas pidiendo.
+    /**
+     * Establece el contenido del área de texto de la nota.
+     * Antes de cambiar el texto, se remueve y vuelve a agregar el listener
+     * para evitar que se dispare el evento de cambio de documento.
+     *
+     * @param contenido El nuevo texto para el JTextArea.
+     */
     public void setContenidoNota(String contenido) {
-        // Remueve el listener antes de cambiar el texto para evitar que se dispare
         txtCuerpoDerContenidoNota.getDocument().removeDocumentListener(documentListener);
-        
-        // Cambia el texto del JTextArea
         txtCuerpoDerContenidoNota.setText(contenido);
-        
-        // Vuelve a agregar el listener
         txtCuerpoDerContenidoNota.getDocument().addDocumentListener(documentListener);
     }
 
+    /**
+     * Obtiene el índice de la nota seleccionada actualmente.
+     * @return El índice de la nota seleccionada.
+     */
     public int getNotaSeleccionadaIndex() {
         return notaSeleccionadaIndex;
     }
     
-    // Este método ahora es el que se encarga de cambiar la selección visual
+    /**
+     * Actualiza la selección visual de las notas en el panel izquierdo.
+     * @param index El índice de la nota que debe ser marcada como seleccionada.
+     */
     public void seleccionarNota(int index) {
         this.notaSeleccionadaIndex = index;
         for (int i = 0; i < panelCuerpoIzquierdo.getComponentCount(); i++) {
@@ -133,7 +195,11 @@ public class VistaNotas extends javax.swing.JFrame {
         }
     }
 
-    // El controlador ahora es responsable de llamar a este método para actualizar la vista
+    /**
+     * Muestra una lista de notas en el panel izquierdo.
+     * Este método elimina todas las notas existentes y las recrea.
+     * @param contenidos Una lista de cadenas de texto (contenidos) que representan las notas.
+     */
     public void mostrarNotas(List<String> contenidos) {
         panelCuerpoIzquierdo.removeAll();
         panelCuerpoIzquierdo.revalidate();
@@ -165,6 +231,11 @@ public class VistaNotas extends javax.swing.JFrame {
         panelCuerpoIzquierdo.repaint();
     }
 
+    /**
+     * Genera un título corto para una nota a partir de su contenido.
+     * @param contenido El contenido completo de la nota.
+     * @return Un título de hasta 3 palabras.
+     */
     private String getTituloNota(String contenido) {
         if (contenido == null || contenido.trim().isEmpty()) {
             return "Nueva Nota";
@@ -177,6 +248,11 @@ public class VistaNotas extends javax.swing.JFrame {
         return titulo.toString().trim();
     }
 
+    /**
+     * Actualiza el título de una nota específica en el panel izquierdo.
+     * @param index El índice de la nota cuyo título se va a actualizar.
+     * @param contenido El nuevo contenido de la nota para generar el nuevo título.
+     */
     public void actualizarTituloNota(int index, String contenido) {
         if (index >= 0 && index < panelCuerpoIzquierdo.getComponentCount()) {
             JLabel label = (JLabel) panelCuerpoIzquierdo.getComponent(index);

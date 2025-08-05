@@ -8,39 +8,70 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+/**
+ * La clase ControladorNotas es el "Controlador" en el patrón de diseño MVC.
+ * Actúa como el intermediario principal entre el modelo (GestorNotas) y la vista (VistaNotas).
+ *
+ * Sus responsabilidades son:
+ * 1. Escuchar las acciones del usuario desde la vista.
+ * 2. Interpretar estas acciones y manipular el modelo de acuerdo a ellas.
+ * 3. Actualizar la vista para reflejar los cambios en el modelo.
+ *
+ * @author jesus
+ */
 public class ControladorNotas implements ActionListener {
+    
+    // Una referencia al modelo para acceder a la lógica de negocio.
     private final GestorNotas gestor;
+    
+    // Una referencia a la vista para manipular la interfaz de usuario.
     private final VistaNotas vista;
 
+    /**
+     * Constructor del controlador.
+     *
+     * @param gestor Una instancia de GestorNotas.
+     * @param vista Una instancia de VistaNotas.
+     */
     public ControladorNotas(GestorNotas gestor, VistaNotas vista) {
         this.gestor = gestor;
         this.vista = vista;
         initController();
     }
 
+    /**
+     * Inicializa el controlador, configurando los listeners para los eventos de la vista.
+     */
     private void initController() {
+        // Asigna este controlador como el ActionListener para varios botones y menús.
         vista.addCrearNotaListener(this);
         vista.addGuardarNotaListener(this);
         vista.addLimpiarTodoListener(this);
         vista.addBuscarListener(this);
         
-        // Listener para la selección de notas
+        // Asigna métodos específicos a las interfaces de listener de la vista
+        // usando expresiones lambda, lo que es una práctica moderna y limpia.
         vista.setNotaSeleccionadaListener(this::cambiarNotaSeleccionada);
-        // Listener para guardar cambios de texto
         vista.setGuardarCambiosListener(this::guardarCambiosNotaActual);
 
-        // Si no hay notas, crea una por defecto
+        // Si la aplicación se inicia sin notas, crea una nota vacía por defecto.
         if (gestor.getNotas().isEmpty()) {
             gestor.crearNota("");
         }
         
+        // Carga la interfaz de usuario inicial con los datos del modelo.
         actualizarVistaCompleta();
     }
     
-    // Método que se activa al hacer clic en los botones
+    /**
+     * Este método se activa cuando se hace clic en un botón o ítem de menú.
+     *
+     * @param e El evento de acción que contiene el comando del componente.
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         String comando = e.getActionCommand();
+        // Usa una estructura switch para manejar los diferentes comandos de acción.
         switch (comando) {
             case "Nueva Nota":
                 crearNuevaNota();
@@ -54,7 +85,12 @@ public class ControladorNotas implements ActionListener {
         }
     }
     
-    // Maneja la creación de una nueva nota
+    /**
+     * Lógica para crear una nueva nota.
+     * 1. Pide al modelo que cree una nueva nota.
+     * 2. Pide a la vista que se actualice.
+     * 3. Selecciona visualmente la nueva nota y muestra su contenido vacío.
+     */
     private void crearNuevaNota() {
         gestor.crearNota("");
         actualizarVistaCompleta();
@@ -62,7 +98,13 @@ public class ControladorNotas implements ActionListener {
         vista.setContenidoNota("");
     }
 
-    // Maneja la acción de guardar un archivo
+    /**
+     * Lógica para guardar la nota seleccionada en un archivo.
+     * 1. Obtiene el índice de la nota seleccionada desde la vista.
+     * 2. Usa JFileChooser para que el usuario elija la ubicación y el nombre del archivo.
+     * 3. Llama al método del modelo para guardar la nota.
+     * 4. Muestra mensajes de éxito o error al usuario.
+     */
     private void guardarNota() {
         int indice = vista.getNotaSeleccionadaIndex();
         if (indice < 0) {
@@ -90,7 +132,13 @@ public class ControladorNotas implements ActionListener {
         }
     }
     
-    // Maneja la eliminación de todas las notas
+    /**
+     * Lógica para eliminar todas las notas.
+     * 1. Pide confirmación al usuario para evitar la eliminación accidental.
+     * 2. Si el usuario confirma, le pide al modelo que elimine todas las notas.
+     * 3. Crea una nota vacía por defecto.
+     * 4. Actualiza la vista para reflejar el nuevo estado del modelo.
+     */
     private void limpiarTodas() {
         int confirm = JOptionPane.showConfirmDialog(vista, 
                 "¿Eliminar todas las notas? Esta acción no se puede deshacer",
@@ -105,7 +153,12 @@ public class ControladorNotas implements ActionListener {
         }
     }
     
-    // Método para manejar el clic en los labels de la lista de notas
+    /**
+     * Maneja el cambio de selección de notas en la vista.
+     * Este método es llamado por el listener de selección de la vista.
+     *
+     * @param indice El índice de la nueva nota seleccionada.
+     */
     private void cambiarNotaSeleccionada(int indice) {
         if(indice >= 0 && indice < gestor.getNotas().size()){
             vista.setContenidoNota(gestor.getNota(indice).getContenido());
@@ -113,7 +166,12 @@ public class ControladorNotas implements ActionListener {
         }
     }
     
-    // Método para guardar los cambios de la nota actual
+    /**
+     * Maneja el guardado automático de los cambios en el contenido de la nota actual.
+     * Este método es llamado por el DocumentListener de la vista.
+     *
+     * @param contenido El nuevo contenido de la nota.
+     */
     private void guardarCambiosNotaActual(String contenido) {
         int indice = vista.getNotaSeleccionadaIndex();
         if (indice >= 0 && indice < gestor.getNotas().size()) {
@@ -122,13 +180,20 @@ public class ControladorNotas implements ActionListener {
         }
     }
 
-    // Este método centraliza la actualización de la vista desde el modelo
+    /**
+     * Centraliza la lógica de actualización de la interfaz de usuario.
+     * Este método se encarga de sincronizar la vista con el estado actual del modelo.
+     */
     private void actualizarVistaCompleta() {
+        // Muestra todas las notas en el panel izquierdo de la vista.
         vista.mostrarNotas(gestor.getContenidoNotas());
+        
+        // Si hay notas, selecciona la primera y muestra su contenido.
         if (!gestor.getNotas().isEmpty()) {
             vista.setContenidoNota(gestor.getNota(0).getContenido());
             vista.seleccionarNota(0);
         } else {
+            // Si no hay notas, limpia el área de texto y la selección.
             vista.setContenidoNota("");
             vista.seleccionarNota(-1);
         }
