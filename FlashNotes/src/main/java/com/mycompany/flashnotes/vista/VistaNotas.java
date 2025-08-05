@@ -13,40 +13,93 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /**
- * La clase VistaNotas representa la interfaz de usuario de la aplicación.
- * Es la "Vista" en el patrón de diseño MVC. Su única responsabilidad es
- * mostrar la información al usuario y capturar sus interacciones (clics,
- * entrada de texto, etc.) para luego notificar al controlador.
+ * La clase VistaNotas representa la interfaz de usuario (UI) de la aplicación FlashNotes.
  *
- * Esta clase no contiene lógica de negocio; solo lógica de presentación.
+ * Su principal responsabilidad es:
+ * 1.  Mostrar la información que recibe del modelo a través del controlador.
+ * 2.  Capturar las interacciones del usuario (clics en botones, escritura, etc.).
+ * 3.  Notificar al controlador sobre estas interacciones, sin contener lógica de negocio.
+ *
+ * Esta clase implementa la interfaz {@link VistaNotasInterface}, lo que la desacopla
+ * de manera efectiva del controlador y facilita la sustitución de la UI si fuera necesario.
  *
  * @author jesus
  */
-public class VistaNotas extends javax.swing.JFrame {
-    
-    // El índice de la nota que está seleccionada actualmente en la lista.
-    private int notaSeleccionadaIndex = -1;
-    
-    // Estilos de borde para los JLabels que representan las notas.
-    private final Border defaultBorder = BorderFactory.createEmptyBorder(5, 5, 5, 5);
-    private final Border selectedBorder = BorderFactory.createLineBorder(new Color(155, 182, 255), 2);
-    
-    // Un único DocumentListener para el JTextArea, usado para notificar cambios.
-    private final DocumentListener documentListener;
-    
-    // Listener para guardar cambios de texto, implementado en el controlador.
-    private GuardarCambiosListener guardarCambiosListener;
-    
-    // Listener para seleccionar una nota, implementado en el controlador.
-    private NotaSeleccionadaListener notaSeleccionadaListener;
+public class VistaNotas extends javax.swing.JFrame implements VistaNotasInterface {
+
+    // ====================================================================================
+    // ATRIBUTOS DE LA CLASE
+    // ¿Por qué están aquí? Son el "estado" de la vista. Son datos necesarios para
+    // que la UI funcione, como el índice de la nota seleccionada o la apariencia
+    // de los bordes. Declararlos al inicio es una convención estándar y limpia.
+    // ====================================================================================
     
     /**
-     * Crea y configura una nueva instancia del formulario VistaNotas.
+     * El índice de la nota que está actualmente seleccionada en la lista.
+     * Su valor inicial es -1, indicando que no hay ninguna nota seleccionada.
      */
+    private int notaSeleccionadaIndex = -1;
+    
+    /**
+     * El borde por defecto para las notas que no están seleccionadas.
+     * Es una variable final para garantizar que no se modifique en tiempo de ejecución.
+     */
+    private final Border defaultBorder = BorderFactory.createEmptyBorder(5, 5, 5, 5);
+    
+    /**
+     * El borde para la nota que está actualmente seleccionada.
+     * Su color y grosor la distinguen visualmente de las demás.
+     */
+    private final Border selectedBorder = BorderFactory.createLineBorder(new Color(155, 182, 255), 2);
+    
+    /**
+     * El listener que se encarga de monitorear los cambios de texto en el área de contenido.
+     * Es una variable final porque se inicializa una vez y no cambia.
+     */
+    private final DocumentListener documentListener;
+    
+    /**
+     * Referencia al listener que el controlador proporciona para guardar cambios.
+     * Se usa para notificar al controlador cuando el usuario edita una nota.
+     */
+    private VistaNotasInterface.GuardarCambiosListener guardarCambiosListener;
+    
+    /**
+     * Referencia al listener que el controlador proporciona para la selección de notas.
+     * Se usa para notificar al controlador cuando el usuario hace clic en una nota.
+     */
+    private VistaNotasInterface.NotaSeleccionadaListener notaSeleccionadaListener;
+    
+    // ====================================================================================
+    // CONSTRUCTOR DE LA CLASE
+    // ¿Por qué está organizado así? Para que el constructor sea más legible.
+    // Se delega la lógica compleja de inicialización a métodos privados con nombres
+    // descriptivos, siguiendo el Principio de Responsabilidad Única.
+    // ====================================================================================
+
     public VistaNotas() {
-        // Inicializa el DocumentListener una sola vez. Se usará para detectar
-        // cambios en el texto del JTextArea y notificar al controlador.
-        documentListener = new DocumentListener() {
+        // Inicialización de listeners
+        this.documentListener = crearDocumentListener();
+        
+        // Inicialización de los componentes de la interfaz de usuario.
+        // Este método es autogenerado por NetBeans/Swing.
+        initComponents();
+        
+        // Configuración adicional de la UI
+        configurarUI();
+        
+        // Asignación de listeners a los componentes
+        asignarListeners();
+    }
+
+    /**
+     * Crea e inicializa el DocumentListener para el área de texto de la nota.
+     * Su propósito es notificar al controlador en tiempo real cada vez que el
+     * usuario escribe o borra texto.
+     * @return Una nueva instancia de DocumentListener.
+     */
+    private DocumentListener crearDocumentListener() {
+        return new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) { notificarCambios(); }
             @Override
@@ -54,27 +107,26 @@ public class VistaNotas extends javax.swing.JFrame {
             @Override
             public void changedUpdate(DocumentEvent e) { notificarCambios(); }
             
-            /**
-             * Llama al listener para guardar cambios si está disponible y si
-             * hay una nota seleccionada.
-             */
             private void notificarCambios() {
+                // Solo notifica al controlador si hay un listener asignado y una nota seleccionada.
                 if (guardarCambiosListener != null && notaSeleccionadaIndex >= 0) {
                     guardarCambiosListener.onGuardarCambios(txtCuerpoDerContenidoNota.getText());
                 }
             }
         };
+    }
+    
+    /**
+     * Realiza configuraciones visuales adicionales que no están en initComponents().
+     * Su propósito es centralizar la lógica de personalización de la ventana.
+     */
+    private void configurarUI() {
+        setLocationRelativeTo(null); // Centra la ventana en la pantalla.
         
-        initComponents(); // Método generado por el diseñador de GUI de NetBeans.
-        setLocationRelativeTo(null);
-        
-        // Agrega el listener inicial al JTextArea.
-        txtCuerpoDerContenidoNota.getDocument().addDocumentListener(documentListener);
-        
-        // Inicializa el panel izquierdo para que use un BoxLayout vertical.
+        // Configura el layout para que las notas se apilen verticalmente.
         panelCuerpoIzquierdo.setLayout(new javax.swing.BoxLayout(panelCuerpoIzquierdo, javax.swing.BoxLayout.Y_AXIS));
-
-        // Agrupa los botones de radio para los temas.
+        
+        // Configura los botones de radio para los temas, asegurando que solo uno pueda ser seleccionado.
         ButtonGroup temas = new ButtonGroup();
         temas.add(opcTemaClaro);
         temas.add(opcTemaOscuro);
@@ -82,111 +134,85 @@ public class VistaNotas extends javax.swing.JFrame {
     }
     
     /**
-     * Interfaz para notificar al controlador cuando una nota es seleccionada.
+     * Asigna todos los listeners necesarios a los componentes de la UI.
+     * Su propósito es separar la asignación de eventos del resto de la inicialización.
      */
-    public interface NotaSeleccionadaListener {
-        void onNotaSeleccionada(int index);
+    private void asignarListeners() {
+        txtCuerpoDerContenidoNota.getDocument().addDocumentListener(this.documentListener);
     }
-        
-    /**
-     * Establece el listener que se llamará cuando se seleccione una nota.
-     * @param listener La implementación de la interfaz NotaSeleccionadaListener.
-     */
-    public void setNotaSeleccionadaListener(NotaSeleccionadaListener listener) {
+    
+    // ====================================================================================
+    // MÉTODOS DE LA INTERFAZ
+    // Estos métodos son el "contrato" de la vista. El controlador los usa para
+    // enviar comandos y recibir información sin saber los detalles internos de la UI.
+    // ====================================================================================
+
+    @Override
+    public void setNotaSeleccionadaListener(VistaNotasInterface.NotaSeleccionadaListener listener) {
         this.notaSeleccionadaListener = listener;
     }
 
-    /**
-     * Interfaz para notificar al controlador cuando el contenido de la nota cambia.
-     */
-    public interface GuardarCambiosListener {
-        void onGuardarCambios(String contenido);
-    }
-        
-    /**
-     * Establece el listener que se llamará cuando el contenido de la nota cambie.
-     * @param listener La implementación de la interfaz GuardarCambiosListener.
-     */
-    public void setGuardarCambiosListener(GuardarCambiosListener listener) {
+    @Override
+    public void setGuardarCambiosListener(VistaNotasInterface.GuardarCambiosListener listener) {
         this.guardarCambiosListener = listener;
     }
-        
-    /**
-     * Agrega un ActionListener para el botón y el ítem de menú de "Nueva Nota".
-     * @param l El ActionListener que manejará el evento.
-     */
+
+    @Override
     public void addCrearNotaListener(ActionListener l) {
         btnElementoNuevaNota.addActionListener(l);
         opcNuevaNota.addActionListener(l);
     }
 
-    /**
-     * Agrega un ActionListener para el botón y el ítem de menú de "Guardar TXT".
-     * @param l El ActionListener que manejará el evento.
-     */
+    @Override
     public void addGuardarNotaListener(ActionListener l) {
         btnElementoGuardarTxt.addActionListener(l);
         opcGuardarElemento.addActionListener(l);
     }
 
-    /**
-     * Agrega un ActionListener para el botón y el ítem de menú de "Limpiar Todo".
-     * @param l El ActionListener que manejará el evento.
-     */
+    @Override
     public void addLimpiarTodoListener(ActionListener l) {
         btnElementoLimpiarTodo.addActionListener(l);
         opcLimipiarTodo.addActionListener(l);
     }
 
-    /**
-     * Agrega un ActionListener para el campo de texto de búsqueda.
-     * @param l El ActionListener que manejará el evento.
-     */
+    @Override
     public void addBuscarListener(ActionListener l) {
         txtElementoBuscarNotaActual.addActionListener(l);
     }
 
-    /**
-     * Obtiene el texto del campo de búsqueda.
-     * @return El texto que el usuario ha introducido en el campo de búsqueda.
-     */
+    @Override
     public String getTextoBusqueda() {
         return txtElementoBuscarNotaActual.getText();
     }
 
-    /**
-     * Obtiene el contenido actual del área de texto de la nota.
-     * @return El contenido de la nota.
-     */
+    @Override
     public String getContenidoNota() {
         return txtCuerpoDerContenidoNota.getText();
     }
 
-    /**
-     * Establece el contenido del área de texto de la nota.
-     * Antes de cambiar el texto, se remueve y vuelve a agregar el listener
-     * para evitar que se dispare el evento de cambio de documento.
-     *
-     * @param contenido El nuevo texto para el JTextArea.
-     */
+    @Override
     public void setContenidoNota(String contenido) {
+        // ¿Por qué se remueve y se agrega el listener?
+        // Esto es un patrón común para evitar que el listener se active cuando el
+        // controlador actualiza el texto programáticamente, lo que podría
+        // causar un bucle de eventos no deseado.
         txtCuerpoDerContenidoNota.getDocument().removeDocumentListener(documentListener);
         txtCuerpoDerContenidoNota.setText(contenido);
         txtCuerpoDerContenidoNota.getDocument().addDocumentListener(documentListener);
     }
 
-    /**
-     * Obtiene el índice de la nota seleccionada actualmente.
-     * @return El índice de la nota seleccionada.
-     */
+    @Override
     public int getNotaSeleccionadaIndex() {
         return notaSeleccionadaIndex;
     }
     
     /**
      * Actualiza la selección visual de las notas en el panel izquierdo.
+     * Su propósito es puramente visual: cambiar el borde de la nota seleccionada.
+     * No dispara ningún evento al controlador.
      * @param index El índice de la nota que debe ser marcada como seleccionada.
      */
+    @Override
     public void seleccionarNota(int index) {
         this.notaSeleccionadaIndex = index;
         for (int i = 0; i < panelCuerpoIzquierdo.getComponentCount(); i++) {
@@ -196,10 +222,11 @@ public class VistaNotas extends javax.swing.JFrame {
     }
 
     /**
-     * Muestra una lista de notas en el panel izquierdo.
-     * Este método elimina todas las notas existentes y las recrea.
-     * @param contenidos Una lista de cadenas de texto (contenidos) que representan las notas.
+     * Muestra las notas en el panel lateral izquierdo.
+     * Su propósito es renderizar la lista de notas que le proporciona el controlador.
+     * @param contenidos Una lista de Strings con el contenido de cada nota.
      */
+    @Override
     public void mostrarNotas(List<String> contenidos) {
         panelCuerpoIzquierdo.removeAll();
         panelCuerpoIzquierdo.revalidate();
@@ -215,6 +242,11 @@ public class VistaNotas extends javax.swing.JFrame {
             JLabel notaLabel = new JLabel(getTituloNota(contenido));
             notaLabel.setBorder(defaultBorder);
             notaLabel.putClientProperty("index", i);
+            
+            // ¿Por qué se agrega el MouseListener aquí?
+            // Cada JLabel necesita su propio listener para notificar a la vista (y al controlador)
+            // cuando se ha hecho clic en él. La lógica de qué hacer con ese clic se delega al
+            // notaSeleccionadaListener.
             notaLabel.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
@@ -232,9 +264,10 @@ public class VistaNotas extends javax.swing.JFrame {
     }
 
     /**
-     * Genera un título corto para una nota a partir de su contenido.
+     * Extrae un título de una nota (las primeras 3 palabras).
+     * Es un método helper privado que ayuda a la vista a renderizar los títulos de las notas.
      * @param contenido El contenido completo de la nota.
-     * @return Un título de hasta 3 palabras.
+     * @return El título de la nota, limitado a tres palabras.
      */
     private String getTituloNota(String contenido) {
         if (contenido == null || contenido.trim().isEmpty()) {
@@ -249,10 +282,12 @@ public class VistaNotas extends javax.swing.JFrame {
     }
 
     /**
-     * Actualiza el título de una nota específica en el panel izquierdo.
-     * @param index El índice de la nota cuyo título se va a actualizar.
-     * @param contenido El nuevo contenido de la nota para generar el nuevo título.
+     * Actualiza el título visual de una nota en el panel izquierdo.
+     * Se usa cuando el usuario edita el contenido de una nota.
+     * @param index El índice de la nota a actualizar.
+     * @param contenido El nuevo contenido de la nota para generar el título.
      */
+    @Override
     public void actualizarTituloNota(int index, String contenido) {
         if (index >= 0 && index < panelCuerpoIzquierdo.getComponentCount()) {
             JLabel label = (JLabel) panelCuerpoIzquierdo.getComponent(index);
