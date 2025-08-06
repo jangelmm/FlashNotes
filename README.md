@@ -923,9 +923,21 @@ Esta fase se enfoca en empaquetar la aplicación FlashNotes para su distribució
 #### **Entregables Clave**
 
 * **Binarios de la Aplicación:**
-    * `FlashNotes-with-dependencies.jar`
-    * `FlashNotes.exe` (instalador para Windows)
-    * `FlashNotes.deb` (instalador para Linux)
+    * [FlashNotes.jar](/Instalador/FlashNotes.jar)
+    * [FlashNotes.exe](/Instalador/FlashNotes-Install.exe) (instalador para Windows)
+    * [FlashNotes.deb](/FlashNotes/flashnotes_1.0_amd64.deb) (instalador para Linux)
+
+    Para linux la aplicación se ejecuta así:
+    ```
+    /opt/flashnotes/bin/FlashNotes
+    ```
+
+    Otra Opción es crear un Enlace Simbolico al PATH:
+    ```
+    sudo ln -s /opt/flashnotes/bin/FlashNotes /usr/local/bin/FlashNotes
+    ```
+
+    Después de esto, podrás ejecutar la aplicación simplemente con el comando `FlashNotes`.
 * **Documentación:**
     * Archivo `LICENSE` con la licencia MIT del proyecto.
     * Archivo `README.md` con la información general de la aplicación.
