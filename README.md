@@ -874,7 +874,7 @@ Validación por el usuario final (tú o tus compañeros/profesor).
 
 ---
 
-## 3. CheckList de Requisitos Cubiertos
+### 3. CheckList de Requisitos Cubiertos
 
 - [x] Crear nota
 - [x] Eliminar nota
@@ -886,9 +886,89 @@ Validación por el usuario final (tú o tus compañeros/profesor).
 
 ---
 
-## 4. Conclusiones de la Fase
+### 4. Conclusiones de la Fase
 
 El sistema FlashNotes ha superado exitosamente las pruebas funcionales, de integración y usabilidad.
 
-## Despliegue
-## Mantenimiento
+## Fase 5: Despliegue
+Esta fase se enfoca en empaquetar la aplicación FlashNotes para su distribución y en la preparación de la documentación necesaria para los usuarios finales y otros desarrolladores.
+
+#### **Requisitos del Sistema**
+
+* **Aplicación (`.jar`):** Requiere un Java Runtime Environment (JRE) versión 23 o superior instalado.
+* **Instalador de Windows (`.exe`):** No requiere que el usuario tenga Java instalado, ya que incluye un JRE optimizado. Funciona en sistemas operativos Windows de 64 bits.
+* **Instalador de Linux (`.deb`):** No requiere que el usuario tenga Java instalado. Funciona en distribuciones de Linux basadas en Debian/Ubuntu de 64 bits.
+
+#### **Características de la Aplicación**
+
+* **Gestión de Notas:** Creación, edición, guardado y eliminación de notas en un gestor integrado.
+* **Interfaz Gráfica Intuitiva:** Interfaz de usuario simple y limpia para una experiencia de usuario fluida.
+* **Soporte de Temas:** Permite alternar entre un tema claro y oscuro para adaptarse a las preferencias del usuario.
+* **Búsqueda Rápida:** Funcionalidad de búsqueda que filtra las notas existentes en tiempo real.
+* **Persistencia de Datos:** Las notas se guardan automáticamente, garantizando que no se pierdan los cambios.
+
+#### **Actividades Principales**
+
+* **Generación de Binarios:** Creación de diferentes formatos de distribución para distintos sistemas operativos.
+    * **JAR ejecutable:** Empaquetado del código y sus dependencias (como FlatLaf) en un único archivo `FlashNotes-with-dependencies.jar` usando el plugin `maven-assembly-plugin`.
+    * **Instalador nativo para Windows:** Creación de un archivo `FlashNotes.exe` autocontenido, utilizando `jlink` para generar un JRE optimizado y Launch4j para empaquetarlo todo.
+    * **Instalador nativo para Linux:** Planificación de la generación de un paquete `FlashNotes.deb` utilizando la herramienta `jpackage` para empaquetar el JRE y la aplicación en un instalador nativo.
+* **Creación de Documentación y Licencias:**
+    * Redacción de una licencia **MIT** para el proyecto, que se incluirá en el repositorio y en los instaladores.
+    * Preparación de un archivo `README.md` que contenga una descripción del proyecto, requisitos de instalación y una guía rápida de uso.
+* **Publicación de la Aplicación:**
+    * Subida del código fuente completo y los binarios generados a un repositorio de GitHub.
+    * Creación de un *release* en GitHub para cada versión estable, adjuntando los instaladores correspondientes.
+
+#### **Entregables Clave**
+
+* **Binarios de la Aplicación:**
+    * `FlashNotes-with-dependencies.jar`
+    * `FlashNotes.exe` (instalador para Windows)
+    * `FlashNotes.deb` (instalador para Linux)
+* **Documentación:**
+    * Archivo `LICENSE` con la licencia MIT del proyecto.
+    * Archivo `README.md` con la información general de la aplicación.
+* **Repositorio GitHub:**
+    * Código fuente completo y bien estructurado.
+    * Una versión publicada (release) con todos los entregables adjuntos.
+
+## Fase 6: Mantenimiento
+
+El mantenimiento del proyecto FlashNotes es un proceso continuo que asegura su estabilidad, funcionalidad y relevancia a largo plazo. Se invita a toda la comunidad de usuarios y desarrolladores a participar en este proceso.
+
+#### **1. Cómo Reportar un Error (Bug)**
+
+Si encuentras un error o un comportamiento inesperado en la aplicación, por favor, ayúdanos a corregirlo siguiendo estos pasos:
+
+1.  **Verifica los Bugs Existentes:** Revisa la sección de [Issues](https://github.com/jangelmm/FlashNotes/issues) en GitHub para ver si el error ya ha sido reportado.
+2.  **Crea un Nuevo Issue:** Si no lo encuentras, haz clic en el botón **`New Issue`** y selecciona la plantilla de **`Bug Report`**.
+3.  **Proporciona la Siguiente Información:**
+      * **Pasos para Reproducir:** Una lista clara de los pasos que llevan al error.
+      * **Comportamiento Esperado:** Describe lo que la aplicación debería haber hecho.
+      * **Comportamiento Actual:** Describe lo que la aplicación hizo de manera incorrecta.
+      * **Información del Entorno:** Incluye la versión de la aplicación, tu sistema operativo (Windows, macOS, Linux) y la versión de Java que estás utilizando.
+
+#### **2. Cómo Sugerir una Nueva Característica**
+
+Tus ideas son valiosas para el crecimiento de la aplicación. Si tienes una sugerencia, por favor, repórtala de la siguiente manera:
+
+1.  **Verifica las Sugerencias Existentes:** Revisa la sección de [Issues](https://github.com/jangelmm/FlashNotes/issues) para ver si alguien más ya propuso la idea.
+2.  **Crea un Nuevo Issue:** Selecciona la plantilla de **`Feature Request`**.
+3.  **Describe tu Idea:** Explica claramente la nueva característica y por qué sería útil para la aplicación. Si es posible, proporciona un ejemplo de cómo funcionaría.
+
+#### **3. Cómo Contribuir al Código**
+
+Si eres desarrollador y te gustaría contribuir, ¡eres bienvenido\!
+
+1.  **Clona el Repositorio:**
+    ```bash
+    https://github.com/jangelmm/FlashNotes.git
+    ```
+2.  **Configura tu Entorno:**
+      * Importa el proyecto en tu IDE preferido (se recomienda NetBeans o IntelliJ IDEA).
+      * Asegúrate de tener instalado el JDK 23.
+3.  **Realiza tus Cambios:** Implementa la corrección de errores o la nueva funcionalidad.
+4.  **Ejecuta las Pruebas:** Antes de enviar tus cambios, asegúrate de que todas las funcionalidades existentes sigan operando correctamente.
+5.  **Envía una Pull Request:** Sube tus cambios a tu propio *fork* del repositorio y crea una **Pull Request** para que tus cambios sean revisados e incorporados al proyecto principal.
+

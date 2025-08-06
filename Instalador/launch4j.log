@@ -1,0 +1,97 @@
+
+
+Version:	3.50
+CmdLine:	D:\Documentos\Proyectos\FlashNotes\Instalador\FlashNotes.exe --l4j-debug
+JNI:		No
+WOW64:		Yes
+Working dir:	D:\Documentos\Proyectos\FlashNotes\Instalador\.
+Requires JDK:	Yes
+Requires 64-Bit: Yes
+Java min ver:	
+Java max ver:	
+Substitute:	JAVA_HOME = 
+Substitute:	PATH = C:\Program Files\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Common Files\Oracle\Java\java8path;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Strawberry\c\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\perl\bin;C:\Program Files\Git\cmd;C:\Program Files\PostgreSQL\16\bin;C:\Program Files\MySQL\MySQL Server 9.2\bin;C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\;C:\msys64\ucrt64\bin;C:\sdl2\bin;C:\Program Files\CMake\bin;C:\Users\jesus\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\jesus\AppData\Local\Programs\MiKTeX\miktex\bin\x64\;C:\Program Files (x86)\Java\jre1.8.0_441\bin
+JRE paths:	;C:\Program Files\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Common Files\Oracle\Java\java8path;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Strawberry\c\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\perl\bin;C:\Program Files\Git\cmd;C:\Program Files\PostgreSQL\16\bin;C:\Program Files\MySQL\MySQL Server 9.2\bin;C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\;C:\msys64\ucrt64\bin;C:\sdl2\bin;C:\Program Files\CMake\bin;C:\Users\jesus\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\jesus\AppData\Local\Programs\MiKTeX\miktex\bin\x64\;C:\Program Files (x86)\Java\jre1.8.0_441\bin
+Check launcher:	C:\Program Files\Common Files\Oracle\Java\javapath\bin\javaw.exe (not found)
+Check launcher:	C:\Program Files (x86)\Common Files\Oracle\Java\java8path\bin\javaw.exe (not found)
+Check launcher:	C:\Program Files (x86)\Common Files\Oracle\Java\javapath\bin\javaw.exe (not found)
+Check launcher:	C:\WINDOWS\system32\bin\javaw.exe (not found)
+Check launcher:	C:\WINDOWS\bin\javaw.exe (not found)
+Check launcher:	C:\WINDOWS\System32\Wbem\bin\javaw.exe (not found)
+Check launcher:	C:\WINDOWS\System32\WindowsPowerShell\v1.0\bin\javaw.exe (not found)
+Check launcher:	C:\WINDOWS\System32\OpenSSH\bin\javaw.exe (not found)
+Check launcher:	C:\Strawberry\c\bin\javaw.exe (not found)
+Check launcher:	C:\Strawberry\perl\site\bin\javaw.exe (not found)
+Check launcher:	C:\Strawberry\perl\bin\javaw.exe (not found)
+Check launcher:	C:\Program Files\Git\cmd\bin\javaw.exe (not found)
+Check launcher:	C:\Program Files\PostgreSQL\16\bin\javaw.exe (not found)
+Check launcher:	C:\Program Files\MySQL\MySQL Server 9.2\bin\javaw.exe (not found)
+Check launcher:	C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\bin\javaw.exe (not found)
+Check launcher:	C:\msys64\ucrt64\bin\javaw.exe (not found)
+Check launcher:	C:\sdl2\bin\javaw.exe (not found)
+Check launcher:	C:\Program Files\CMake\bin\javaw.exe (not found)
+Check launcher:	C:\Users\jesus\AppData\Local\Programs\Microsoft VS Code\bin\javaw.exe (not found)
+Check launcher:	C:\Users\jesus\AppData\Local\Programs\MiKTeX\miktex\bin\x64\bin\javaw.exe (not found)
+Check launcher:	C:\Program Files (x86)\Java\jre1.8.0_441\bin\javaw.exe (OK)
+Check javac:	C:\Program Files (x86)\Java\jre1.8.0_441\bin\javac.exe (not found)
+Error msg:	This application requires a Java Runtime Environment.
+
+
+Version:	3.50
+CmdLine:	D:\Documentos\Proyectos\FlashNotes\Instalador\FlashNotes.exe --l4j-debug
+JNI:		No
+WOW64:		Yes
+Working dir:	D:\Documentos\Proyectos\FlashNotes\Instalador\.
+Requires JDK:	Yes
+Requires 64-Bit: Yes
+Java min ver:	
+Java max ver:	
+JRE paths:	jre-flashnotes
+Check launcher:	D:\Documentos\Proyectos\FlashNotes\Instalador\jre-flashnotes\bin\javaw.exe (OK)
+Check javac:	D:\Documentos\Proyectos\FlashNotes\Instalador\jre-flashnotes\bin\javac.exe (not found)
+Error msg:	This application requires a Java Runtime Environment.
+
+
+Version:	3.50
+CmdLine:	D:\Documentos\Proyectos\FlashNotes\Instalador\FlashNotes.exe --l4j-debug
+JNI:		No
+WOW64:		Yes
+Working dir:	D:\Documentos\Proyectos\FlashNotes\Instalador\.
+Requires JDK:	Yes
+Requires 64-Bit: Yes
+Java min ver:	
+Java max ver:	
+JRE paths:	jre-flashnotes
+Check launcher:	D:\Documentos\Proyectos\FlashNotes\Instalador\jre-flashnotes\bin\javaw.exe (OK)
+Check javac:	D:\Documentos\Proyectos\FlashNotes\Instalador\jre-flashnotes\bin\javac.exe (not found)
+Error msg:	This application requires a Java Runtime Environment.
+
+
+Version:	3.50
+CmdLine:	D:\Documentos\Proyectos\FlashNotes\Instalador\FlashNotes.exe --l4j-debug
+JNI:		No
+WOW64:		Yes
+Working dir:	D:\Documentos\Proyectos\FlashNotes\Instalador\.
+Requires JDK:	Yes
+Requires 64-Bit: Yes
+Java min ver:	
+Java max ver:	
+JRE paths:	jre-flashnotes
+Check launcher:	D:\Documentos\Proyectos\FlashNotes\Instalador\jre-flashnotes\bin\javaw.exe (OK)
+Check javac:	D:\Documentos\Proyectos\FlashNotes\Instalador\jre-flashnotes\bin\javac.exe (not found)
+Error msg:	This application requires a Java Runtime Environment.
+
+
+Version:	3.50
+CmdLine:	D:\Documentos\Proyectos\FlashNotes\Instalador\FlashNotes.exe --l4j-debug
+JNI:		No
+WOW64:		Yes
+Working dir:	D:\Documentos\Proyectos\FlashNotes\Instalador\.
+Requires JDK:	Yes
+Requires 64-Bit: Yes
+Java min ver:	
+Java max ver:	
+JRE paths:	jre-flashnotes
+Check launcher:	D:\Documentos\Proyectos\FlashNotes\Instalador\jre-flashnotes\bin\javaw.exe (OK)
+Check javac:	D:\Documentos\Proyectos\FlashNotes\Instalador\jre-flashnotes\bin\javac.exe (not found)
+Error msg:	This application requires a Java Runtime Environment.
