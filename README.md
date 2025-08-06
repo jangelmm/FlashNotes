@@ -1,4 +1,10 @@
 # FlashNotes - Documentación
+
+**Aplición Desktop - Creada en Java Swing - Modelo Vista Controlador - Metodología Cascada (Waterfall)**
+
+![](/Images/imagen1.png)
+![](/Images/imagen2.png)
+
 ## Fase 1: Requisitos
 ### Requerimientos del Negocio
 #### Contexto del Proyecto
