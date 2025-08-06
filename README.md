@@ -714,6 +714,7 @@ graph TD
 - Git: git version 2.47.1.windows.2
 - Gestor de paquetes: Maven
 - BD: No aplica
+
 Nota: **El código del proyecto esta alojado en una subcarpeta actual ./FlashNotes**
 
 ### Configuración de lógica y persistencia
@@ -721,6 +722,7 @@ Para esto creamos una serie de paquetes.
 - modelo
 - vista
 - control
+- persistencia
 
 ### 1\. Implementación de Lógica y Persistencia
 
@@ -790,19 +792,17 @@ Aquí se implementa la clase `ControladorNotas` para unir la `Vista` y el `Model
 
 ### 3\. Pruebas Unitarias y de Integración
 
-Una vez que las clases estén implementadas, es fundamental probarlas. Te recomiendo usar un framework de pruebas como **JUnit**.
-
 #### a) Pruebas Unitarias
 
   - **Para `GestorNotas`:** Verificar que los métodos `crearNota()`, `eliminarNota()`, y `buscar()` funcionen correctamente de forma aislada.
-  >Estatus: C0RRECTO
+  >Estatus: CORRECTO
   - **Para `NotaDAO`:** Probar que `guardarNotaEnArchivo()` guarde un objeto en un archivo y que `cargarNotaDesdeArchivo()` lo lea correctamente.
-  >Estatus: C0RRECTO
+  >Estatus: CORRECTO
 
 #### b) Pruebas de Integración
 
   - **Flujo completo:** Puedes simular un clic en un botón del controlador y verificar que la lógica del negocio se ejecute y que la vista se actualice correctamente.
-  >Estatus: C0RRECTO
+  >Estatus: CORRECTO
 
 ## Fase 4: Pruebas
 
@@ -905,14 +905,6 @@ Esta fase se enfoca en empaquetar la aplicación FlashNotes para su distribució
 * **Instalador de Windows (`.exe`):** No requiere que el usuario tenga Java instalado, ya que incluye un JRE optimizado. Funciona en sistemas operativos Windows de 64 bits.
 * **Instalador de Linux (`.deb`):** No requiere que el usuario tenga Java instalado. Funciona en distribuciones de Linux basadas en Debian/Ubuntu de 64 bits.
 
-#### **Características de la Aplicación**
-
-* **Gestión de Notas:** Creación, edición, guardado y eliminación de notas en un gestor integrado.
-* **Interfaz Gráfica Intuitiva:** Interfaz de usuario simple y limpia para una experiencia de usuario fluida.
-* **Soporte de Temas:** Permite alternar entre un tema claro y oscuro para adaptarse a las preferencias del usuario.
-* **Búsqueda Rápida:** Funcionalidad de búsqueda que filtra las notas existentes en tiempo real.
-* **Persistencia de Datos:** Las notas se guardan automáticamente, garantizando que no se pierdan los cambios.
-
 #### **Actividades Principales**
 
 * **Generación de Binarios:** Creación de diferentes formatos de distribución para distintos sistemas operativos.
@@ -945,7 +937,7 @@ Esta fase se enfoca en empaquetar la aplicación FlashNotes para su distribució
 
     Después de esto, podrás ejecutar la aplicación simplemente con el comando `FlashNotes`.
 * **Documentación:**
-    * Archivo `LICENSE` con la licencia MIT del proyecto.
+    * Archivo [LICENSE](/Instalador/license.txt) con la licencia MIT del proyecto.
     * Archivo `README.md` con la información general de la aplicación.
 * **Repositorio GitHub:**
     * Código fuente completo y bien estructurado.
@@ -965,7 +957,7 @@ Si encuentras un error o un comportamiento inesperado en la aplicación, por fav
       * **Pasos para Reproducir:** Una lista clara de los pasos que llevan al error.
       * **Comportamiento Esperado:** Describe lo que la aplicación debería haber hecho.
       * **Comportamiento Actual:** Describe lo que la aplicación hizo de manera incorrecta.
-      * **Información del Entorno:** Incluye la versión de la aplicación, tu sistema operativo (Windows, macOS, Linux) y la versión de Java que estás utilizando.
+      * **Información del Entorno:** Incluye la versión de la aplicación, tu sistema operativo (Windows o Linux) y la versión de Java que estás utilizando.
 
 #### **2. Cómo Sugerir una Nueva Característica**
 
@@ -990,3 +982,5 @@ Si eres desarrollador y te gustaría contribuir, ¡eres bienvenido\!
 4.  **Ejecuta las Pruebas:** Antes de enviar tus cambios, asegúrate de que todas las funcionalidades existentes sigan operando correctamente.
 5.  **Envía una Pull Request:** Sube tus cambios a tu propio *fork* del repositorio y crea una **Pull Request** para que tus cambios sean revisados e incorporados al proyecto principal.
 
+---
+Gracias por Leer la documentación y espero te se útil la App.
