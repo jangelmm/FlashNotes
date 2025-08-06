@@ -211,6 +211,41 @@ public class VistaNotas extends javax.swing.JFrame implements VistaNotasInterfac
     public String getContenidoNota() {
         return txtCuerpoDerContenidoNota.getText();
     }
+    
+        @Override
+    public void actualizarConteoNotas(int cantidad){
+        lblEncabezadoNot.setText(cantidad + " notas act.");
+    }
+    
+    @Override
+    public void addCaretListener(CaretListener l) {
+        txtCuerpoDerContenidoNota.addCaretListener(l);
+    }
+    
+    @Override
+    public void setInformacionInferior(String texto) {
+        lblInferiorInformacion.setText(texto);
+    }
+    
+    @Override
+    public void addBuscarKeyListener(KeyListener l) {
+        txtElementoBuscarNotaActual.addKeyListener(l);
+    }
+    
+    @Override
+    public String getTextoBuscar() {
+        return txtElementoBuscarNotaActual.getText();
+    }
+    
+    @Override
+    public void setCaretPosition(int position) {
+        txtCuerpoDerContenidoNota.setCaretPosition(position);
+    }
+
+    @Override
+    public JTextArea getTxtCuerpoDerContenidoNota() {
+        return txtCuerpoDerContenidoNota;
+    }
 
     @Override
     public void setContenidoNota(String contenido) {
@@ -315,41 +350,6 @@ public class VistaNotas extends javax.swing.JFrame implements VistaNotasInterfac
             JLabel label = (JLabel) panelCuerpoIzquierdo.getComponent(index);
             label.setText(getTituloNota(contenido));
         }
-    }
-    
-    @Override
-    public void actualizarConteoNotas(int cantidad){
-        lblEncabezadoNot.setText(cantidad + " notas act.");
-    }
-    
-    @Override
-    public void addCaretListener(CaretListener l) {
-        txtCuerpoDerContenidoNota.addCaretListener(l);
-    }
-    
-    @Override
-    public void setInformacionInferior(String texto) {
-        lblInferiorInformacion.setText(texto);
-    }
-    
-    @Override
-    public void addBuscarKeyListener(KeyListener l) {
-        txtElementoBuscarNotaActual.addKeyListener(l);
-    }
-    
-    @Override
-    public String getTextoBuscar() {
-        return txtElementoBuscarNotaActual.getText();
-    }
-    
-    @Override
-    public void setCaretPosition(int position) {
-        txtCuerpoDerContenidoNota.setCaretPosition(position);
-    }
-
-    @Override
-    public JTextArea getTxtCuerpoDerContenidoNota() {
-        return txtCuerpoDerContenidoNota;
     }
     
     /**
@@ -493,12 +493,15 @@ public class VistaNotas extends javax.swing.JFrame implements VistaNotasInterfac
 
         menuOpciones.setText("Opciones");
 
+        opcNuevaNota.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         opcNuevaNota.setText("Nueva Nota");
         menuOpciones.add(opcNuevaNota);
 
+        opcGuardarElemento.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         opcGuardarElemento.setText("Guardar TXT");
         menuOpciones.add(opcGuardarElemento);
 
+        opcLimipiarTodo.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_D, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         opcLimipiarTodo.setText("Limpiar Todo");
         menuOpciones.add(opcLimipiarTodo);
 

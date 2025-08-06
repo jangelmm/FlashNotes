@@ -734,31 +734,7 @@ Aquí se creará la clase `Nota` con sus atributos y métodos.
 
 **Clase `Nota`:**
 
-```java
-package com.mycompany.flashnotes.modelo;
-
-import java.io.Serializable;
-
-/**
- *
- * @author jesus
- */
-public class Nota implements Serializable {
-    private String contenido;
-
-    public Nota(String contenido) {
-        this.contenido = contenido;
-    }
-
-    public String getContenido() {
-        return contenido;
-    }
-
-    public void setContenido(String contenido) {
-        this.contenido = contenido;
-    }
-}
-```
+[Nota.java](./FlashNotes/src/main/java/com/mycompany/flashnotes/modelo/Nota.java)
 
 > **Nota:** La interfaz `Serializable` es importante para que el objeto `Nota` pueda ser guardado en archivos de forma eficiente.
 
@@ -768,53 +744,7 @@ Aquí se implementará la clase `NotaDAO` que hemos diseñado.
 
 **Clase `NotaDAO`:**
 
-```java
-package com.mycompany.flashnotes.persistencia;
-
-import com.mycompany.flashnotes.modelo.Nota;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-
-/**
- *
- * @author jesus
- */
-public class NotaDAO {
-    //Implementación de métodos para guardar/cargar archivos
-    public boolean guardarNotaEnArchivo(Nota nota, String rutaArchivo) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(rutaArchivo))) {
-            writer.write(nota.getContenido());
-            return true;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    public Nota cargarNotaDesdeArchivo(String rutaArchivo) {
-        StringBuilder contenido = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new FileReader(rutaArchivo))) {
-            String linea;
-            while ((linea = reader.readLine()) != null) {
-                contenido.append(linea).append(System.lineSeparator());
-            }
-            return new Nota(contenido.toString().trim());
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-    
-    public void eliminarArchivoNotas(){
-        // No aplica en notas temporales
-    }
-}
-
-```
-
+[NotaDAO.java](./FlashNotes/src/main/java/com/mycompany/flashnotes/persistencia/NotaDAO.java)
 
 #### c) Implementación de la Lógica del Negocio (`GestorNotas`)
 
@@ -822,58 +752,7 @@ Esta clase conectará la lógica con la persistencia.
 
 **Clase `GestorNotas`:**
 
-```java
-package com.mycompany.flashnotes.modelo;
-
-import com.mycompany.flashnotes.persistencia.NotaDAO;
-import java.util.ArrayList;
-import java.util.List;
-
-/**
- *
- * @author jesus
- */
-public class GestorNotas {
-    private List<Nota> notas;
-    private NotaDAO notaDAO;
-    
-    public GestorNotas() {
-        this.notas = new ArrayList<>();
-        this.notaDAO = new NotaDAO();
-        //En caso de crear una Nota inicial()
-    }
-    
-    public void crearNota(String contenido){
-        notas.add(new Nota(contenido));
-    }
-    
-    public void eliminarNota(int indice){
-        if(indice >= 0 && indice < notas.size()){
-            notas.remove(indice);
-        }
-    }
-    
-    public boolean guardarNota(int indice, String rutaArchivo){
-        if(indice >= 0 && indice < notas.size()){
-            Nota notaAGuardar = notas.get(indice);
-            return notaDAO.guardarNotaEnArchivo(notaAGuardar, rutaArchivo);
-        }
-        return false;
-    }
-    
-    //... Implementación de buscar, eliminarTodas, etc.
-    
-    //Retornar las Notas
-    public List<String> getContenidoNotas(){
-        List<String> contenidos = new ArrayList<>();
-        for(Nota nota: notas){
-            contenidos.add(nota.getContenido());
-        }
-        return contenidos;
-    }
-}
-
-```
+[GestorNotas.java](./FlashNotes/src/main/java/com/mycompany/flashnotes/modelo/GestorNotas.java)
 
 -----
 
@@ -887,393 +766,10 @@ Aquí crearás la clase `VistaNotas` con todos los componentes y listeners.
 
 [VistaNotas.java](./FlashNotes/src/main/java/com/mycompany/flashnotes/vista/VistaNotas.java)
 
-```java
-package com.mycompany.flashnotes.vista;
+Algo importante, es que para simplificar la abstracción y reducir la complejidad del código, se creo un Interfaz para la Vista.
 
-import java.awt.Color;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.util.List;
-import javax.swing.BorderFactory;
-import javax.swing.JLabel;
-import javax.swing.border.Border;
+[VistaNotasInterface.java](./FlashNotes/src/main/java/com/mycompany/flashnotes/vista/VistaNotasInterface.java)
 
-/**
- *
- * @author jesus
- */
-public class VistaNotas extends javax.swing.JFrame {
-    
-    private int notaSeleccionadaIndex = -1;
-    private final Border defaultBorder = BorderFactory.createEmptyBorder(5, 5, 5, 5);
-    private final Border selectedBorder = BorderFactory.createLineBorder(new Color(155, 182, 255), 2);
-
-    /**
-     * Creates new form VistaNotas
-     */
-    public VistaNotas() {
-        initComponents();
-        // Inicializa el panel izquierdo para que use un BoxLayout vertical
-        panelCuerpoIzquierdo.setLayout(new javax.swing.BoxLayout(panelCuerpoIzquierdo, javax.swing.BoxLayout.Y_AXIS));
-    }
-    
-    // Método público para que el controlador pueda registrar sus listeners
-    public void addCrearNotaListener(ActionListener listenForCrearBtn) {
-        btnElementoNuevaNota.addActionListener(listenForCrearBtn);
-        opcNuevaNota.addActionListener(listenForCrearBtn);
-    }
-    
-    public void addGuardarNotaListener(ActionListener listenForGuardarBtn) {
-        btnElementoGuardarTxt.addActionListener(listenForGuardarBtn);
-        opcGuardarElemento.addActionListener(listenForGuardarBtn);
-    }
-    
-    public void addLimpiarTodoListener(ActionListener listenForLimpiarBtn) {
-        btnElementoLimpiarTodo.addActionListener(listenForLimpiarBtn);
-        opcLimipiarTodo.addActionListener(listenForLimpiarBtn);
-    }
-    
-    // Método para obtener el contenido de la nota del panel derecho
-    public String getContenidoNota() {
-        return txtCuerpoDerContenidoNota.getText();
-    }
-    
-    // Método para establecer el contenido de la nota en el panel derecho
-    public void setContenidoNota(String contenido) {
-        txtCuerpoDerContenidoNota.setText(contenido);
-    }
-    
-    // Método para obtener el índice de la nota actualmente seleccionada
-    public int getNotaSeleccionadaIndex() {
-        return notaSeleccionadaIndex;
-    }
-    
-    // Método para actualizar la lista de notas en el panel izquierdo
-    public void mostrarNotas(List<String> contenidos) {
-        panelCuerpoIzquierdo.removeAll(); // Limpiar la lista anterior
-        panelCuerpoIzquierdo.revalidate();
-        panelCuerpoIzquierdo.repaint();
-
-        for (int i = 0; i < contenidos.size(); i++) {
-            String contenido = contenidos.get(i);
-            
-            // Crea un JLabel para cada nota
-            JLabel notaLabel = new JLabel();
-            notaLabel.setText(getTituloNota(contenido));
-            notaLabel.setBorder(defaultBorder);
-            notaLabel.putClientProperty("index", i); // Guarda el índice como propiedad
-            
-            // Añade un MouseListener para detectar clics
-            notaLabel.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    JLabel source = (JLabel) e.getSource();
-                    int index = (int) source.getClientProperty("index");
-                    seleccionarNota(index);
-                }
-            });
-
-            panelCuerpoIzquierdo.add(notaLabel);
-        }
-        
-        panelCuerpoIzquierdo.revalidate();
-        panelCuerpoIzquierdo.repaint();
-    }
-    
-    // Método para manejar la selección de una nota
-    private void seleccionarNota(int index) {
-        this.notaSeleccionadaIndex = index;
-        
-        // Deselecciona el label anterior
-        for (int i = 0; i < panelCuerpoIzquierdo.getComponentCount(); i++) {
-            JLabel label = (JLabel) panelCuerpoIzquierdo.getComponent(i);
-            label.setBorder(defaultBorder);
-        }
-
-        // Selecciona el nuevo label y actualiza el contenido de la nota
-        if (index >= 0 && index < panelCuerpoIzquierdo.getComponentCount()) {
-            JLabel selectedLabel = (JLabel) panelCuerpoIzquierdo.getComponent(index);
-            selectedLabel.setBorder(selectedBorder);
-            // NOTA: El controlador se encargará de actualizar el contenido en el JTextArea.
-        }
-    }
-    
-    // Método auxiliar para generar el título de la nota
-    private String getTituloNota(String contenido) {
-        if (contenido == null || contenido.trim().isEmpty()) {
-            return "Nueva Nota";
-        }
-        String[] palabras = contenido.trim().split("\\s+");
-        StringBuilder titulo = new StringBuilder();
-        for (int i = 0; i < Math.min(3, palabras.length); i++) {
-            titulo.append(palabras[i]).append(" ");
-        }
-        return titulo.toString().trim();
-    }
-
-    /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
-     * regenerated by the Form Editor.
-     */
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">                          
-    private void initComponents() {
-
-        panelPrincipal = new javax.swing.JPanel();
-        panelSuperior = new javax.swing.JPanel();
-        lblEncabezadoImg = new javax.swing.JLabel();
-        lblEncabezadoTxt = new javax.swing.JLabel();
-        lblEncabezadoNot = new javax.swing.JLabel();
-        panelElementos = new javax.swing.JPanel();
-        btnElementoNuevaNota = new javax.swing.JButton();
-        btnElementoGuardarTxt = new javax.swing.JButton();
-        btnElementoLimpiarTodo = new javax.swing.JButton();
-        lblElementoIconoBuscar = new javax.swing.JLabel();
-        txtElementoBuscarNotaActual = new javax.swing.JTextField();
-        panelCuerpo = new javax.swing.JPanel();
-        scrollPanelCuerpoIzquierdo = new javax.swing.JScrollPane();
-        panelCuerpoIzquierdo = new javax.swing.JPanel();
-        lblCuerpoIzquierdoNotasActivas = new javax.swing.JLabel();
-        panelCuerpoDerecho = new javax.swing.JPanel();
-        scrollPanelCuerpoDer = new javax.swing.JScrollPane();
-        txtCuerpoDerContenidoNota = new javax.swing.JTextArea();
-        panelInferior = new javax.swing.JPanel();
-        lblInferiorInformacion = new javax.swing.JLabel();
-        lblInferiorAdvertencia = new javax.swing.JLabel();
-        menuBarra = new javax.swing.JMenuBar();
-        menuOpciones = new javax.swing.JMenu();
-        opcNuevaNota = new javax.swing.JMenuItem();
-        opcGuardarElemento = new javax.swing.JMenuItem();
-        opcLimipiarTodo = new javax.swing.JMenuItem();
-        menuApariencia = new javax.swing.JMenu();
-        opcTemaOscuro = new javax.swing.JRadioButtonMenuItem();
-        opcTemaClaro = new javax.swing.JRadioButtonMenuItem();
-        menuAyuda = new javax.swing.JMenu();
-        opcDocumentacion = new javax.swing.JMenuItem();
-        opcSitioWeb = new javax.swing.JMenuItem();
-
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("FlashNotes");
-        setMinimumSize(new java.awt.Dimension(600, 350));
-
-        panelPrincipal.setLayout(new javax.swing.BoxLayout(panelPrincipal, javax.swing.BoxLayout.Y_AXIS));
-
-        panelSuperior.setMaximumSize(new java.awt.Dimension(32767, 50));
-        panelSuperior.setPreferredSize(new java.awt.Dimension(400, 50));
-
-        lblEncabezadoImg.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/destello.png"))); // NOI18N
-        panelSuperior.add(lblEncabezadoImg);
-
-        lblEncabezadoTxt.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        lblEncabezadoTxt.setText("FlashNotes - Notas Temporales");
-        panelSuperior.add(lblEncabezadoTxt);
-
-        lblEncabezadoNot.setText("2 notas act.");
-        panelSuperior.add(lblEncabezadoNot);
-
-        panelPrincipal.add(panelSuperior);
-
-        panelElementos.setMaximumSize(new java.awt.Dimension(32767, 50));
-        panelElementos.setPreferredSize(new java.awt.Dimension(400, 50));
-
-        btnElementoNuevaNota.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/nuevo.png"))); // NOI18N
-        btnElementoNuevaNota.setText("Nueva Nota");
-        panelElementos.add(btnElementoNuevaNota);
-
-        btnElementoGuardarTxt.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/guardar.png"))); // NOI18N
-        btnElementoGuardarTxt.setText("Guardar TXT");
-        panelElementos.add(btnElementoGuardarTxt);
-
-        btnElementoLimpiarTodo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/borrar.png"))); // NOI18N
-        btnElementoLimpiarTodo.setText("Limpiar Todo");
-        panelElementos.add(btnElementoLimpiarTodo);
-
-        lblElementoIconoBuscar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/buscar.png"))); // NOI18N
-        panelElementos.add(lblElementoIconoBuscar);
-
-        txtElementoBuscarNotaActual.setToolTipText("");
-        txtElementoBuscarNotaActual.setMinimumSize(new java.awt.Dimension(90, 26));
-        txtElementoBuscarNotaActual.setPreferredSize(new java.awt.Dimension(100, 26));
-        panelElementos.add(txtElementoBuscarNotaActual);
-
-        panelPrincipal.add(panelElementos);
-
-        panelCuerpo.setLayout(new javax.swing.BoxLayout(panelCuerpo, javax.swing.BoxLayout.LINE_AXIS));
-
-        scrollPanelCuerpoIzquierdo.setMaximumSize(new java.awt.Dimension(150, 32767));
-        scrollPanelCuerpoIzquierdo.setMinimumSize(new java.awt.Dimension(150, 22));
-        scrollPanelCuerpoIzquierdo.setPreferredSize(new java.awt.Dimension(150, 100));
-
-        panelCuerpoIzquierdo.setLayout(new javax.swing.BoxLayout(panelCuerpoIzquierdo, javax.swing.BoxLayout.Y_AXIS));
-
-        lblCuerpoIzquierdoNotasActivas.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        lblCuerpoIzquierdoNotasActivas.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lblCuerpoIzquierdoNotasActivas.setText("Notas Activas");
-        lblCuerpoIzquierdoNotasActivas.setMaximumSize(new java.awt.Dimension(170, 20));
-        lblCuerpoIzquierdoNotasActivas.setMinimumSize(new java.awt.Dimension(120, 20));
-        lblCuerpoIzquierdoNotasActivas.setPreferredSize(new java.awt.Dimension(120, 20));
-        panelCuerpoIzquierdo.add(lblCuerpoIzquierdoNotasActivas);
-
-        scrollPanelCuerpoIzquierdo.setViewportView(panelCuerpoIzquierdo);
-
-        panelCuerpo.add(scrollPanelCuerpoIzquierdo);
-
-        panelCuerpoDerecho.setBackground(new java.awt.Color(255, 153, 153));
-        panelCuerpoDerecho.setLayout(new javax.swing.BoxLayout(panelCuerpoDerecho, javax.swing.BoxLayout.LINE_AXIS));
-
-        txtCuerpoDerContenidoNota.setColumns(20);
-        txtCuerpoDerContenidoNota.setRows(5);
-        scrollPanelCuerpoDer.setViewportView(txtCuerpoDerContenidoNota);
-
-        panelCuerpoDerecho.add(scrollPanelCuerpoDer);
-
-        panelCuerpo.add(panelCuerpoDerecho);
-
-        panelPrincipal.add(panelCuerpo);
-
-        panelInferior.setMaximumSize(new java.awt.Dimension(32767, 25));
-        panelInferior.setPreferredSize(new java.awt.Dimension(400, 25));
-        panelInferior.setLayout(new javax.swing.BoxLayout(panelInferior, javax.swing.BoxLayout.LINE_AXIS));
-
-        lblInferiorInformacion.setText("Linea: 12, Caracteres: 445");
-        lblInferiorInformacion.setMaximumSize(new java.awt.Dimension(150, 16));
-        lblInferiorInformacion.setMinimumSize(new java.awt.Dimension(150, 16));
-        lblInferiorInformacion.setPreferredSize(new java.awt.Dimension(150, 16));
-        panelInferior.add(lblInferiorInformacion);
-
-        lblInferiorAdvertencia.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        lblInferiorAdvertencia.setForeground(new java.awt.Color(255, 204, 51));
-        lblInferiorAdvertencia.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/advertencia.png"))); // NOI18N
-        lblInferiorAdvertencia.setText("Notas temporales - Se eliminarán al cerrar");
-        panelInferior.add(lblInferiorAdvertencia);
-
-        panelPrincipal.add(panelInferior);
-
-        menuOpciones.setText("Opciones");
-
-        opcNuevaNota.setText("Nueva Nota");
-        menuOpciones.add(opcNuevaNota);
-
-        opcGuardarElemento.setText("Guardar");
-        menuOpciones.add(opcGuardarElemento);
-
-        opcLimipiarTodo.setText("LimpiarTodo");
-        menuOpciones.add(opcLimipiarTodo);
-
-        menuBarra.add(menuOpciones);
-
-        menuApariencia.setText("Apariencia");
-
-        opcTemaOscuro.setSelected(true);
-        opcTemaOscuro.setText("Oscuro");
-        menuApariencia.add(opcTemaOscuro);
-
-        opcTemaClaro.setSelected(true);
-        opcTemaClaro.setText("Claro");
-        menuApariencia.add(opcTemaClaro);
-
-        menuBarra.add(menuApariencia);
-
-        menuAyuda.setText("Ayuda");
-
-        opcDocumentacion.setText("Documentación");
-        menuAyuda.add(opcDocumentacion);
-
-        opcSitioWeb.setText("Donar");
-        menuAyuda.add(opcSitioWeb);
-
-        menuBarra.add(menuAyuda);
-
-        setJMenuBar(menuBarra);
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(panelPrincipal, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(panelPrincipal, javax.swing.GroupLayout.DEFAULT_SIZE, 240, Short.MAX_VALUE)
-        );
-
-        pack();
-    }// </editor-fold>                        
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(VistaNotas.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(VistaNotas.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(VistaNotas.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(VistaNotas.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new VistaNotas().setVisible(true);
-            }
-        });
-    }
-
-    // Variables declaration - do not modify                     
-    private javax.swing.JButton btnElementoGuardarTxt;
-    private javax.swing.JButton btnElementoLimpiarTodo;
-    private javax.swing.JButton btnElementoNuevaNota;
-    private javax.swing.JLabel lblCuerpoIzquierdoNotasActivas;
-    private javax.swing.JLabel lblElementoIconoBuscar;
-    private javax.swing.JLabel lblEncabezadoImg;
-    private javax.swing.JLabel lblEncabezadoNot;
-    private javax.swing.JLabel lblEncabezadoTxt;
-    private javax.swing.JLabel lblInferiorAdvertencia;
-    private javax.swing.JLabel lblInferiorInformacion;
-    private javax.swing.JMenu menuApariencia;
-    private javax.swing.JMenu menuAyuda;
-    private javax.swing.JMenuBar menuBarra;
-    private javax.swing.JMenu menuOpciones;
-    private javax.swing.JMenuItem opcDocumentacion;
-    private javax.swing.JMenuItem opcGuardarElemento;
-    private javax.swing.JMenuItem opcLimipiarTodo;
-    private javax.swing.JMenuItem opcNuevaNota;
-    private javax.swing.JMenuItem opcSitioWeb;
-    private javax.swing.JRadioButtonMenuItem opcTemaClaro;
-    private javax.swing.JRadioButtonMenuItem opcTemaOscuro;
-    private javax.swing.JPanel panelCuerpo;
-    private javax.swing.JPanel panelCuerpoDerecho;
-    private javax.swing.JPanel panelCuerpoIzquierdo;
-    private javax.swing.JPanel panelElementos;
-    private javax.swing.JPanel panelInferior;
-    private javax.swing.JPanel panelPrincipal;
-    private javax.swing.JPanel panelSuperior;
-    private javax.swing.JScrollPane scrollPanelCuerpoDer;
-    private javax.swing.JScrollPane scrollPanelCuerpoIzquierdo;
-    private javax.swing.JTextArea txtCuerpoDerContenidoNota;
-    private javax.swing.JTextField txtElementoBuscarNotaActual;
-    // End of variables declaration                   
-}
-
-```
 
 #### b) Conexión de la UI con la lógica del negocio
 
@@ -1281,39 +777,8 @@ Aquí se implementa la clase `ControladorNotas` para unir la `Vista` y el `Model
 
 **Clase `ControladorNotas`:**
 
-```java
-// Archivo: com/flashnotes/controlador/ControladorNotas.java
-package com.flashnotes.controlador;
+[ControladorNotas.java](./FlashNotes/src/main/java/com/mycompany/flashnotes/control/ControladorNotas.java)
 
-import com.flashnotes.modelo.GestorNotas;
-import com.flashnotes.vista.VistaNotas;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-public class ControladorNotas implements ActionListener {
-    private GestorNotas gestor;
-    private VistaNotas vista;
-    
-    public ControladorNotas(GestorNotas gestor, VistaNotas vista) {
-        this.gestor = gestor;
-        this.vista = vista;
-        // Asignar este controlador como listener para los botones
-        this.vista.addCrearListener(this);
-        // ... Asignar otros listeners
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        String comando = e.getActionCommand();
-        if ("crear".equals(comando)) {
-            gestor.crearNota("Nueva nota");
-            vista.mostrarNotas(gestor.getContenidosNotas());
-        } else if ("guardar".equals(comando)) {
-            // Lógica para guardar una nota
-        }
-    }
-}
-```
 
 -----
 
@@ -1323,13 +788,107 @@ Una vez que las clases estén implementadas, es fundamental probarlas. Te recomi
 
 #### a) Pruebas Unitarias
 
-  - **Para `GestorNotas`:** Verifica que los métodos `crearNota()`, `eliminarNota()`, y `buscar()` funcionen correctamente de forma aislada.
-  - **Para `NotaDAO`:** Prueba que `guardarNotaEnArchivo()` guarde un objeto en un archivo y que `cargarNotaDesdeArchivo()` lo lea correctamente.
+  - **Para `GestorNotas`:** Verificar que los métodos `crearNota()`, `eliminarNota()`, y `buscar()` funcionen correctamente de forma aislada.
+  >Estatus: C0RRECTO
+  - **Para `NotaDAO`:** Probar que `guardarNotaEnArchivo()` guarde un objeto en un archivo y que `cargarNotaDesdeArchivo()` lo lea correctamente.
+  >Estatus: C0RRECTO
 
 #### b) Pruebas de Integración
 
   - **Flujo completo:** Puedes simular un clic en un botón del controlador y verificar que la lógica del negocio se ejecute y que la vista se actualice correctamente.
+  >Estatus: C0RRECTO
 
-## Pruebas
+## Fase 4: Pruebas
+
+### Objetivo
+Verificar que el sistema FlashNotes cumple con los requisitos funcionales y no funcionales definidos, asegurando su correcto funcionamiento, usabilidad e integración de módulos.
+
+---
+
+### 1. Tipos de Pruebas Aplicadas
+
+#### 1.1 Pruebas Funcionales
+Verifican que cada función del sistema actúe como se espera.
+
+| ID     | Caso de Prueba            | Entrada                              | Resultado Esperado                        | Resultado Obtenido | Estado    |
+|--------|---------------------------|--------------------------------------|-------------------------------------------|---------------------|-----------|
+| CF-01  | Crear nota vacía          | Click en "Nueva Nota"                | Se muestra una nota vacía                 | ✅ Funciona          | Aprobado  |
+| CF-02  | Eliminar nota seleccionada| Selección de nota y clic en "Eliminar" | Nota desaparece de la lista             | ✅ Funciona          | Aprobado  |
+| CF-03  | Guardar nota              | Nota escrita y ruta válida           | Archivo `.txt` creado con el contenido    | ✅ Funciona          | Aprobado  |
+| CF-04  | Interfaz Intuitiva        | Revisión de funcionamiento de botones| El sistema cumple y es intuitivo          | ✅ Funciona          | Aprovado  |
+| CF-05  | Buscar Palabras           | Agregar una palabra y Enter          | Posiciona el cursor en la primera aparición            | ✅ Funciona          | Aprovado  |
+
+---
+
+####  1.2 Pruebas de Regresión
+Verifican que nuevas funciones no rompan las anteriores.
+
+| ID     | Cambio Reciente        | Funcionalidad Verificada        | Resultado | Estado |
+|--------|------------------------|---------------------------------|-----------|--------|
+| PR-01  | Añadir cambio de tema  | Crear nota, guardar nota        | ✅ OK      | Aprobado |
+| PR-02  | Cambiar estructura DAO | Guardar en .txt sigue funcionando | ✅ OK    | Aprobado |
+| PR-03  | Links a documentación y Sitio web | El sistema no colapsa y redirige a donde debería | ✅ OK    | Aprobado |
+| PR-04  | Conteo de notas realizadas | Cuenta de forma correcta las notas en la aplicación | ✅ OK    | Aprobado |
+| PR-05  | Conteo de palabras y Línea del puntero | Cuenta de forma correcta las palabras y posición actual | ✅ OK    | Aprobado |
+
+---
+
+#### 1.3 Pruebas de Integración
+Aseguran que los módulos colaboren correctamente.
+
+| ID     | Módulos Involucrados           | Prueba                                  | Resultado |
+|--------|--------------------------------|------------------------------------------|-----------|
+| PI-01  | Vista ↔ Controlador ↔ Modelo   | Crear nota y mostrarla                   | ✅ OK      |
+| PI-02  | Controlador ↔ DAO              | Guardar nota desde botón de GUI          | ✅ OK      |
+
+---
+
+#### 1.4 Pruebas de Usabilidad
+Evalúan la facilidad de uso del sistema por usuarios reales.
+
+| ID     | Escenario Evaluado                     | Observación                             | Mejora Sugerida |
+|--------|----------------------------------------|-----------------------------------------|-----------------|
+| PU-01  | Usuario nuevo intenta crear y guardar  | Botones intuitivos, mensaje claro       | —               |
+| PU-02  | Usuario quiere cambiar a tema oscuro   | Funcionamiento correcto                   | —               |
+| PU-03  | Usuario quiere usar atajos de teclado tipicos   | Funcionamiento correcto                   | —               |
+
+---
+
+#### 1.5 Pruebas de Aceptación del Usuario (UAT)
+Validación por el usuario final (tú o tus compañeros/profesor).
+
+| Criterio                     | Cumplido | Observaciones               |
+|-----------------------------|----------|-----------------------------|
+| El sistema guarda notas     | ✅        |                             |
+| El sistema elimina notas    | ✅        |                             |
+| Interfaz amigable           | ✅        |                             |
+| Se entiende cómo usarlo     | ✅        |                             |
+| El cambio de tema funciona  | ✅        |                             |
+
+---
+
+### 2. Registro de Defectos
+
+| ID     | Descripción                        | Módulo         | Estado     | Fecha Solución |
+|--------|------------------------------------|----------------|------------|----------------|
+
+---
+
+## 3. CheckList de Requisitos Cubiertos
+
+- [x] Crear nota
+- [x] Eliminar nota
+- [x] Guardar como archivo `.txt`
+- [x] Mostrar lista de notas activas
+- [x] Buscar palabta
+- [x] Cambiar tema oscuro/claro
+- [x] Acceso a documentación
+
+---
+
+## 4. Conclusiones de la Fase
+
+El sistema FlashNotes ha superado exitosamente las pruebas funcionales, de integración y usabilidad.
+
 ## Despliegue
 ## Mantenimiento

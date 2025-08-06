@@ -249,6 +249,12 @@ public class ControladorNotas implements ActionListener, CaretListener, KeyListe
         }
     }
     
+    /**
+    * Aplica el tema oscuro (FlatDarkLaf) a la interfaz de usuario.
+    * Utiliza UIManager para establecer el Look and Feel de FlatLaf en su variante oscura.
+    * Luego, actualiza todos los componentes de la vista para que el cambio de tema se refleje
+    * inmediatamente sin necesidad de reiniciar la aplicación.
+    */
     private void cambiarTemaOscuro(){
         try {
             UIManager.setLookAndFeel(new FlatDarkLaf()); // Usa FlatDarkLaf para el tema oscuro
@@ -257,6 +263,13 @@ public class ControladorNotas implements ActionListener, CaretListener, KeyListe
             e.printStackTrace();
         }
     }
+    
+    /**
+    * Aplica el tema claro (FlatLightLaf) a la interfaz de usuario.
+    * Utiliza UIManager para establecer el Look and Feel de FlatLaf en su variante clara.
+    * Luego, actualiza todos los componentes de la vista para que el cambio de tema se refleje
+    * inmediatamente.
+    */
     private void cambiarTemaClaro(){
         try {
             UIManager.setLookAndFeel(new FlatLightLaf()); // Usa FlatLightLaf para el tema claro
@@ -266,6 +279,12 @@ public class ControladorNotas implements ActionListener, CaretListener, KeyListe
         }
     }
     
+    /**
+    * Abre la página del repositorio de GitHub del proyecto en el navegador web predeterminado del sistema.
+    * 1. Intenta obtener una instancia de la clase 'Desktop' para interactuar con las aplicaciones de escritorio.
+    * 2. Utiliza el método 'browse' para abrir la URI especificada.
+    * 3. Captura posibles excepciones de Entrada/Salida (IOException) o de sintaxis de la URI (URISyntaxException).
+    */
     private void visitarDocumentacion(){
         try {
             try {
@@ -278,6 +297,12 @@ public class ControladorNotas implements ActionListener, CaretListener, KeyListe
         }
     }
     
+    /**
+    * Abre el sitio web personal del desarrollador en el navegador web predeterminado del sistema.
+    * 1. Intenta obtener una instancia de la clase 'Desktop' para interactuar con las aplicaciones de escritorio.
+    * 2. Utiliza el método 'browse' para abrir la URI especificada.
+    * 3. Captura posibles excepciones de Entrada/Salida (IOException) o de sintaxis de la URI (URISyntaxException).
+    */
     private void visitarSitioWeb(){
         try {
             try {
